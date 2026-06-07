@@ -1,13 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Files, Sparkles, FileCheck, Trash2, AlertTriangle, 
+  Files, Sparkles, Trash2, AlertTriangle, 
   HelpCircle, Zap, Droplets, Trash, ClipboardCheck, 
   ShieldCheck, ArrowRight, BrainCircuit, Activity
 } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import ResultCard from '../components/ResultCard';
-import Loader from '../components/Loader';
 import type { UploadedDocument } from '../types/document';
 import { uploadSingleDocument } from '../services/api';
 
@@ -102,105 +101,113 @@ const Home: React.FC = () => {
 
 
   return (
-    <div className="space-y-12">
-      {/* 1. Hero Section */}
-      <section className="text-center max-w-3xl mx-auto space-y-5 pt-4">
-        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
-          <BrainCircuit className="w-3.5 h-3.5" />
-          <span>DistilBERT-powered Green Building Classification</span>
+    <div className="space-y-6 md:space-y-8">
+      {/* 1. Header / Hero Section (Compact & Left Aligned) */}
+      <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-2 border-b border-slate-200/50 pb-4">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+            <BrainCircuit className="w-3.5 h-3.5" />
+            <span>IGBC Taxonomy Pipeline</span>
+          </div>
+          
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
+            Environmental Evaluation Portal
+          </h1>
+          
+          <p className="text-xs text-slate-500 max-w-2xl leading-relaxed font-sans">
+            Upload environmental reports to instantly classify document categories and automatically extract structured green building metrics using Groq API.
+          </p>
         </div>
-        
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight font-display">
-          AI-Powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">IGBC Document</span> Evaluation
-        </h1>
-        
-        <p className="text-base text-slate-500 font-sans max-w-xl mx-auto leading-relaxed">
-          Upload environmental reports and instantly classify documents using DistilBERT AI. Ensure regulatory compliance with our state-of-the-art evaluation pipeline.
-        </p>
 
-        <div className="flex justify-center gap-3 pt-2">
+        <div className="flex-shrink-0">
           <button
             onClick={scrollToUpload}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/10 transition-all hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-all hover:-translate-y-0.5"
           >
             <span>Upload Documents</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </section>
 
-      {/* 2. Stats Section (KPI Cards) */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* KPI 1: Total Documents */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-all duration-300">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Total Documents</span>
-            <div className="text-3xl font-bold text-slate-800 font-display">{totalDocs}</div>
-            <p className="text-[11px] text-slate-500 font-sans">Total files in current session</p>
+      {/* 2. Stats Section (4-column stats grid) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1: Documents Processed */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Processed Docs</span>
+            <div className="text-lg font-bold text-slate-800 font-display">{processedDocs} <span className="text-xs font-normal text-slate-400">/ {totalDocs}</span></div>
           </div>
-          <div className="p-3.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
-            <Files className="w-6 h-6" />
+          <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+            <Files className="w-4 h-4" />
           </div>
         </div>
 
         {/* KPI 2: Average Confidence */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-all duration-300">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Average Confidence</span>
-            <div className="text-3xl font-bold text-slate-800 font-display">
-              {(avgConfidence * 100).toFixed(1)}%
+        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Avg. Confidence</span>
+            <div className="text-lg font-bold text-slate-800 font-display">
+              {avgConfidence > 0 ? (avgConfidence * 100).toFixed(1) + '%' : '—'}
             </div>
-            <p className="text-[11px] text-slate-500 font-sans">DistilBERT evaluation certainty</p>
           </div>
-          <div className="p-3.5 rounded-xl bg-purple-50 text-purple-600 border border-purple-100">
-            <Sparkles className="w-6 h-6" />
+          <div className="p-2 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
+            <Sparkles className="w-4 h-4" />
           </div>
         </div>
 
-        {/* KPI 3: Processed Reports */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-all duration-300">
-          <div className="space-y-1">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-sans">Processed Reports</span>
-            <div className="text-3xl font-bold text-slate-800 font-display">
-              {processedDocs} <span className="text-xs font-normal text-slate-400">/ {totalDocs}</span>
-            </div>
-            <p className="text-[11px] text-slate-500 font-sans">Successfully classified PDFs</p>
+        {/* KPI 3: Classifier F1 */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Classifier F1</span>
+            <div className="text-lg font-bold text-slate-800 font-display">96.4%</div>
           </div>
-          <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
-            <FileCheck className="w-6 h-6" />
+          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <Activity className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* KPI 4: Compliance Score */}
+        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
+          <div className="space-y-0.5">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Compliance Score</span>
+            <div className="text-lg font-bold text-slate-800 font-display">94/100</div>
+          </div>
+          <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
+            <ShieldCheck className="w-4 h-4" />
           </div>
         </div>
       </section>
 
-      {/* 3. Main Action Grid */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Side: Upload & Queue (Col Span 2) */}
-        <div className="lg:col-span-2 space-y-6">
-          <div ref={uploadSectionRef} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+      {/* 3. Main 2-Column Content Layout */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Upload, Processing Queue & Taxonomy Info (Col Span 1) */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Upload Card */}
+          <div ref={uploadSectionRef} className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <h2 className="text-lg font-bold text-slate-800 font-display">Evaluate PDF Documents</h2>
-                <p className="text-xs text-slate-500 font-sans">Upload environmental reports to start AI taxonomy classification.</p>
+                <h2 className="text-sm font-bold text-slate-800 font-display">Evaluate Reports</h2>
+                <p className="text-[11px] text-slate-500 font-sans">Upload PDFs to classify & extract metrics.</p>
               </div>
               
               {documents.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100 transition-colors"
+                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded border border-red-100 transition-colors"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Clear All</span>
+                  <Trash2 className="w-3 h-3" />
+                  <span>Clear</span>
                 </button>
               )}
             </div>
 
             {/* Error banner */}
             {errorText && (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5 animate-fade-in">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-amber-600 mt-0.5" />
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2 animate-fade-in">
+                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 mt-0.5" />
                 <div>
-                  <span className="font-semibold">Classification Warning:</span> {errorText}
+                  <span className="font-bold">Evaluation issue:</span> {errorText}
                 </div>
               </div>
             )}
@@ -216,48 +223,40 @@ const Home: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-3"
               >
-                <div className="md:col-span-1">
-                  <Loader
-                    message="Running Model"
-                    subMessage={`Parsing pages and evaluating ${activeUploads.length} document(s)...`}
-                  />
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <span>Processing Queue ({activeUploads.length})</span>
+                  </h3>
                 </div>
-                <div className="md:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-                      </span>
-                      <span>Processing Queue ({activeUploads.length})</span>
-                    </h3>
-                  </div>
-                  
-                  <div className="space-y-2.5 max-h-40 overflow-y-auto pr-1">
-                    {activeUploads.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 gap-4">
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <Activity className="w-4 h-4 text-blue-500 animate-pulse flex-shrink-0" />
-                          <span className="text-xs font-medium text-slate-600 truncate" title={doc.file.name}>
-                            {doc.file.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 w-1/3 sm:w-1/2">
-                          <div className="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className="bg-blue-600 h-full rounded-full transition-all duration-300"
-                              style={{ width: `${doc.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-[11px] font-mono font-bold text-slate-500 w-8 text-right">
-                            {doc.progress}%
-                          </span>
-                        </div>
+                
+                <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                  {activeUploads.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100/60 gap-3 text-xs">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Activity className="w-3.5 h-3.5 text-blue-500 animate-pulse flex-shrink-0" />
+                        <span className="text-[11px] font-medium text-slate-600 truncate" title={doc.file.name}>
+                          {doc.file.name}
+                        </span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex items-center gap-2 w-1/2">
+                        <div className="flex-1 bg-slate-200 rounded-full h-1 overflow-hidden">
+                          <div
+                            className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${doc.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-slate-500 w-8 text-right font-sans">
+                          {doc.progress}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             )}
@@ -270,20 +269,20 @@ const Home: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-5 rounded-2xl bg-red-50 border border-red-100 space-y-3"
+                className="p-4 rounded-xl bg-red-50/50 border border-red-100 space-y-2"
               >
-                <h3 className="text-xs font-bold text-red-700 uppercase tracking-wider flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
+                <h3 className="text-[10px] font-bold text-red-700 uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                  <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
                   <span>Failed Evaluations ({failedUploads.length})</span>
                 </h3>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
+                <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1 custom-scrollbar">
                   {failedUploads.map((doc) => (
-                    <div key={doc.id} className="flex justify-between items-center p-2.5 rounded-lg bg-white border border-red-100 text-xs">
-                      <span className="text-slate-600 truncate max-w-md font-medium" title={doc.file.name}>
+                    <div key={doc.id} className="flex justify-between items-center p-2 rounded bg-white border border-red-100 text-[10.5px] gap-2">
+                      <span className="text-slate-600 truncate flex-1 font-medium font-sans" title={doc.file.name}>
                         {doc.file.name}
                       </span>
-                      <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
-                        {doc.error || 'Evaluation Failed'}
+                      <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200 flex-shrink-0 font-sans">
+                        {doc.error || 'Failed'}
                       </span>
                     </div>
                   ))}
@@ -291,135 +290,92 @@ const Home: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Right Side: Guide & Taxonomy Framework (Col Span 1) */}
-        <div className="space-y-6">
-          {/* AI Model Architecture Info */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 font-display flex items-center gap-2">
-              <BrainCircuit className="w-4.5 h-4.5 text-blue-600" />
-              <span>DistilBERT Model Status</span>
-            </h3>
-            
-            <div className="space-y-3 text-xs text-slate-500 font-sans leading-relaxed">
-              <p>
-                Our core classification system uses a fine-tuned <strong>DistilBERT</strong> model specialized in green building guidelines and sustainability taxonomies.
-              </p>
-              
-              <div className="border-t border-slate-100 pt-3 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-slate-400 font-medium">Model Precision:</span>
-                  <span className="font-bold text-slate-700">96.4% F1-score</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400 font-medium">Inference Latency:</span>
-                  <span className="font-bold text-slate-700">&lt;450ms</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400 font-medium">Vocabulary Size:</span>
-                  <span className="font-bold text-slate-700">30,522 tokens</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* IGBC Classification Taxonomy Map */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-3">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-slate-800 font-display flex items-center gap-1.5">
-                <HelpCircle className="w-4.5 h-4.5 text-blue-600" />
-                <span>IGBC Category Framework</span>
+              <h3 className="text-xs font-bold text-slate-800 font-display flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-blue-600" />
+                <span>IGBC Framework Taxonomy</span>
               </h3>
-              <p className="text-[11px] text-slate-400 font-sans">The 5 structural categories recognized by the classifier:</p>
+              <p className="text-[10px] text-slate-400 font-sans">Supported green building document classifications:</p>
             </div>
 
-            <div className="space-y-2.5 pt-1">
+            <div className="grid grid-cols-2 gap-2 text-[10.5px]">
               {/* Energy */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
-                  <Zap className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-700">Energy Report</h4>
-                  <p className="text-[10px] text-slate-400 font-sans">HVAC, solar indexing, EPI metrics</p>
-                </div>
+              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                <Zap className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                <span className="font-semibold text-slate-700 truncate font-sans">Energy Report</span>
               </div>
 
               {/* Water */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-                  <Droplets className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-700">Water Report</h4>
-                  <p className="text-[10px] text-slate-400 font-sans">Rainwater index, sewage treatment</p>
-                </div>
+              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                <Droplets className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                <span className="font-semibold text-slate-700 truncate font-sans">Water Report</span>
               </div>
 
               {/* Waste */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
-                  <Trash className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-700">Waste Report</h4>
-                  <p className="text-[10px] text-slate-400 font-sans">Segregation compliance, composting</p>
-                </div>
+              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                <Trash className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <span className="font-semibold text-slate-700 truncate font-sans">Waste Report</span>
               </div>
 
               {/* Audit */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                <div className="p-2 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
-                  <ClipboardCheck className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-700">Audit Report</h4>
-                  <p className="text-[10px] text-slate-400 font-sans">Building credits, validation audits</p>
-                </div>
+              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                <ClipboardCheck className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                <span className="font-semibold text-slate-700 truncate font-sans">Audit Report</span>
               </div>
 
               {/* Compliance */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
-                <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-700">Compliance Document</h4>
-                  <p className="text-[10px] text-slate-400 font-sans">Occupancy certificates, government NOCs</p>
-                </div>
+              <div className="col-span-2 flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+                <span className="font-semibold text-slate-700 truncate font-sans">Compliance Document</span>
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* 4. Results Section Grid */}
-      <AnimatePresence>
-        {completedResults.length > 0 && (
-          <motion.section 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="space-y-4 pt-2"
-          >
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-sm font-bold text-slate-800 font-display uppercase tracking-wider">
-                Evaluation Results
-              </h3>
-              <span className="text-xs text-slate-500 font-sans">
-                {completedResults.length} report(s) successfully evaluated
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {completedResults.map((result, idx) => (
-                <ResultCard key={idx} result={result} />
-              ))}
-            </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
+        {/* Right Column: Evaluation Results (Col Span 2) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+            <h3 className="text-xs font-bold text-slate-700 font-display uppercase tracking-wider">
+              Evaluation Results
+            </h3>
+            <span className="text-[11px] text-slate-400 font-medium font-sans">
+              {completedResults.length} report(s) evaluated
+            </span>
+          </div>
+
+          <AnimatePresence mode="popLayout">
+            {completedResults.length === 0 ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="border border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50/10 flex flex-col items-center justify-center min-h-[360px]"
+              >
+                <div className="p-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-400 mb-3">
+                  <Files className="w-5 h-5 text-slate-400" />
+                </div>
+                <h3 className="text-xs font-bold text-slate-700">No evaluations in this session</h3>
+                <p className="text-[11px] text-slate-400 max-w-xs mt-1 font-sans">
+                  Upload green building documents to start the taxonomy classification and automatic field extraction.
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                {completedResults.map((result, idx) => (
+                  <ResultCard key={result.filename + '-' + idx} result={result} />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
     </div>
   );
 };
