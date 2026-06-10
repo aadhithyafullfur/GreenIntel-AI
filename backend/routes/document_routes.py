@@ -8,10 +8,12 @@ try:
     from backend.utils.pdf_extractor import extract_text_from_pdf
     from backend.utils.classifier import classify_text
     from backend.services.information_extractor import extract_information
+    from backend.services.compliance_checker import evaluate_compliance
 except ImportError:
     from utils.pdf_extractor import extract_text_from_pdf
     from utils.classifier import classify_text
     from services.information_extractor import extract_information
+    from services.compliance_checker import evaluate_compliance
 
 router = APIRouter()
 
@@ -21,6 +23,13 @@ class ClassificationResponse(BaseModel):
     document_type: str
     confidence: float
     extracted_data: Optional[Dict[str, Any]] = None
+    compliance_score: Optional[int] = None
+    overall_status: Optional[str] = None
+    checks: Optional[List[Dict[str, Any]]] = None
+    recommendations: Optional[List[str]] = None
+    passed_checks: Optional[int] = None
+    failed_checks: Optional[int] = None
+    partial_checks: Optional[int] = None
 
 # Ensure uploads folder exists
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uploads"))
@@ -73,11 +82,21 @@ async def upload_file(file: UploadFile = File(...)):
                 detail=f"Information extraction failed for '{file.filename}': {str(extractor_err)}"
             )
         
+        # Evaluate compliance rules on extracted metrics
+        comp_res = evaluate_compliance(doc_type, extracted_data or {})
+        
         return ClassificationResponse(
             filename=file.filename,
             document_type=doc_type,
             confidence=round(confidence, 4),
-            extracted_data=extracted_data
+            extracted_data=extracted_data,
+            compliance_score=comp_res.get("compliance_score"),
+            overall_status=comp_res.get("overall_status"),
+            checks=comp_res.get("checks"),
+            recommendations=comp_res.get("recommendations"),
+            passed_checks=comp_res.get("passed_checks"),
+            failed_checks=comp_res.get("failed_checks"),
+            partial_checks=comp_res.get("partial_checks")
         )
         
     except HTTPException as he:
@@ -145,12 +164,22 @@ async def upload_multiple_files(files: List[UploadFile] = File(...)):
                     detail=f"Information extraction failed for '{file.filename}': {str(extractor_err)}"
                 )
             
+            # Evaluate compliance rules on extracted metrics
+            comp_res = evaluate_compliance(doc_type, extracted_data or {})
+            
             results.append(
                 ClassificationResponse(
                     filename=file.filename,
                     document_type=doc_type,
                     confidence=round(confidence, 4),
-                    extracted_data=extracted_data
+                    extracted_data=extracted_data,
+                    compliance_score=comp_res.get("compliance_score"),
+                    overall_status=comp_res.get("overall_status"),
+                    checks=comp_res.get("checks"),
+                    recommendations=comp_res.get("recommendations"),
+                    passed_checks=comp_res.get("passed_checks"),
+                    failed_checks=comp_res.get("failed_checks"),
+                    partial_checks=comp_res.get("partial_checks")
                 )
             )
             

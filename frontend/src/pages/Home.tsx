@@ -97,6 +97,9 @@ const Home: React.FC = () => {
   const avgConfidence = completedResults.length > 0
     ? completedResults.reduce((sum, item) => sum + item.confidence, 0) / completedResults.length
     : 0;
+  const avgComplianceScore = completedResults.length > 0
+    ? completedResults.reduce((sum, item) => sum + (item.compliance_score ?? 0), 0) / completedResults.length
+    : 0;
 
 
 
@@ -171,7 +174,9 @@ const Home: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Compliance Score</span>
-            <div className="text-lg font-bold text-slate-800 font-display">94/100</div>
+            <div className="text-lg font-bold text-slate-800 font-display">
+              {avgComplianceScore > 0 ? Math.round(avgComplianceScore) + '/100' : '—'}
+            </div>
           </div>
           <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
             <ShieldCheck className="w-4 h-4" />
