@@ -4,23 +4,71 @@
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
   
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-primary-light: #EFF6FF;
-  --color-bg-base: #F8FAFC;
-  --color-card-base: #FFFFFF;
-  --color-border-base: #E2E8F0;
-  --color-text-main: #0F172A;
-  --color-text-muted: #64748B;
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-bg-base: var(--bg-base);
+  --color-card-base: var(--card-base);
+  --color-border-base: var(--border-base);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+}
+
+:root {
+  --primary: #F97316;
+  --primary-hover: #EA580C;
+  --primary-light: #FFEDD5;
+  --bg-base: #FFFFFF;
+  --card-base: #FFFFFF;
+  --border-base: #FED7AA;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --accent: #EA580C;
+  --grid-color: rgba(249, 115, 22, 0.04);
+  --glow-color: rgba(249, 115, 22, 0.12);
+}
+
+.dark {
+  --primary: #F97316;
+  --primary-hover: #FB923C;
+  --primary-light: rgba(249, 115, 22, 0.15);
+  --bg-base: #0A0A0A;
+  --card-base: rgba(255, 255, 255, 0.04);
+  --border-base: rgba(255, 255, 255, 0.08);
+  --text-main: #FFFFFF;
+  --text-muted: #A1A1AA;
+  --accent: #FB923C;
+  --grid-color: rgba(255, 255, 255, 0.02);
+  --glow-color: rgba(249, 115, 22, 0.22);
 }
 
 @layer utilities {
   .bg-grid-pattern {
     background-size: 32px 32px;
     background-image: 
-      linear-gradient(to right, rgba(37, 99, 235, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   }
+  
+  .orange-glow {
+    box-shadow: 0 0 50px -12px var(--glow-color);
+  }
+}
+
+/* Global transitions for theme toggling */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+div, header, footer, section, button, a {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Base transitions */
@@ -44,10 +92,10 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: var(--border-base);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: var(--primary);
 }
