@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { UploadCloud, Check } from 'lucide-react';
+import { FileText, Check } from 'lucide-react';
 
 interface FileUploadProps {
   onFilesSelected: (files: File[]) => void;
@@ -62,10 +62,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected, isLoading }) =
       onDragLeave={handleDrag}
       onDrop={handleDrop}
       onClick={onButtonClick}
-      className={`relative w-full rounded-xl border border-dashed transition-all duration-200 py-6 px-4 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-50/50 hover:bg-slate-50/80 ${
+      className={`relative w-full rounded-xl border border-dashed transition-all duration-300 py-10 px-4 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-50/30 hover:bg-slate-50/80 hover:shadow-md ${
         isDragActive
-          ? 'border-blue-500 bg-blue-50/30 shadow-sm'
-          : 'border-slate-300 hover:border-slate-400/80 shadow-sm'
+          ? 'border-blue-600 bg-blue-50/20 shadow-inner'
+          : 'border-[#E2E8F0] hover:border-slate-400 shadow-sm'
       } ${isLoading ? 'pointer-events-none opacity-60' : ''}`}
     >
       {/* Hidden File Input */}
@@ -80,32 +80,32 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected, isLoading }) =
 
       {/* Decorative Glow */}
       <div 
-        className={`absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-blue-500/5 blur-3xl transition-opacity duration-200 ${
+        className={`absolute -inset-10 bg-gradient-to-tr from-blue-500/10 to-indigo-500/5 rounded-full blur-3xl transition-opacity duration-300 pointer-events-none ${
           isDragActive ? 'opacity-100' : 'opacity-0'
         }`}
       />
 
-      {/* Upload Icon */}
-      <div className={`p-2.5 rounded-lg border mb-3 transition-all duration-200 ${
+      {/* PDF Upload Icon */}
+      <div className={`p-3.5 rounded-full border mb-4 transition-all duration-300 ${
         isDragActive
-          ? 'bg-blue-100/50 border-blue-200 text-blue-600 scale-105'
-          : 'bg-white border-slate-200 text-slate-400'
+          ? 'bg-blue-100 border-blue-300 text-blue-600 scale-110 shadow'
+          : 'bg-white border-[#E2E8F0] text-[#64748B] shadow-sm'
       }`}>
-        <UploadCloud className="w-5 h-5" strokeWidth={1.5} />
+        <FileText className="w-6 h-6 text-red-500" strokeWidth={1.5} />
       </div>
 
       {/* Drag & Drop texts */}
-      <div className="text-center space-y-1 relative z-10">
-        <h3 className="text-xs font-semibold text-slate-700 font-display">
-          {isDragActive ? 'Drop your files to evaluate' : 'Drag & drop your PDF documents here'}
+      <div className="text-center space-y-1.5 relative z-10">
+        <h3 className="text-xs font-semibold text-[#0F172A] font-sans">
+          {isDragActive ? 'Drop files to evaluate' : 'Drag & drop your PDF documents here'}
         </h3>
-        <p className="text-[11px] text-slate-500 font-sans">
+        <p className="text-[11px] text-[#64748B] font-sans">
           or <span className="text-blue-600 font-semibold hover:text-blue-700 hover:underline">browse files</span>
         </p>
       </div>
 
       {/* Constraints & Support Badges */}
-      <div className="mt-4 flex items-center gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-wider z-10 border-t border-slate-100 pt-3 w-full justify-center">
+      <div className="mt-6 flex items-center gap-4 text-[9px] font-bold text-[#64748B] uppercase tracking-wider z-10 border-t border-slate-100 pt-4 w-full justify-center">
         <span className="flex items-center gap-1">
           <Check className="w-3 h-3 text-emerald-500" strokeWidth={2.5} />
           <span>PDF Reports only</span>

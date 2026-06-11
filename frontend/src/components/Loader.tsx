@@ -7,11 +7,11 @@ interface LoaderProps {
 }
 
 const Loader: React.FC<LoaderProps> = ({
-  message = "Analyzing PDF Documents",
-  subMessage = "Extracting text and running DistilBERT classifier..."
+  message = "Evaluating PDF Documents",
+  subMessage = "Extracting text and performing compliance intelligence evaluation..."
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="flex flex-col items-center justify-center py-10 px-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-md transition-all duration-300">
       <div className="relative w-16 h-16 mb-5 flex items-center justify-center">
         {/* Glowing background halo */}
         <div className="absolute inset-0 rounded-full bg-blue-500/8 blur-xl animate-pulse"></div>
@@ -26,10 +26,10 @@ const Loader: React.FC<LoaderProps> = ({
       </div>
 
       <div className="text-center max-w-sm space-y-1.5">
-        <h3 className="text-base font-semibold text-slate-800 font-display tracking-tight">
+        <h3 className="text-base font-semibold text-[#0F172A] font-sans tracking-tight">
           {message}
         </h3>
-        <p className="text-xs text-slate-500 font-sans leading-relaxed">
+        <p className="text-xs text-[#64748B] font-sans leading-relaxed">
           {subMessage}
         </p>
       </div>

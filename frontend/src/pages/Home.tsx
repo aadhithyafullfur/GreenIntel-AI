@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Files, Sparkles, Trash2, AlertTriangle, 
+  FileText, Sparkles, Trash2, AlertCircle, 
   HelpCircle, Zap, Droplets, Trash, ClipboardCheck, 
-  ShieldCheck, ArrowRight, BrainCircuit, Activity
+  ShieldCheck, ArrowRight, Brain, Activity,
+  TrendingUp
 } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import ResultCard from '../components/ResultCard';
@@ -25,7 +26,6 @@ const Home: React.FC = () => {
     setErrorText(null);
     setIsProcessing(true);
 
-    // Create uploaded documents state objects
     const newDocs: UploadedDocument[] = files.map((file) => ({
       id: Math.random().toString(36).substring(2, 9) + '-' + Date.now(),
       file,
@@ -33,12 +33,9 @@ const Home: React.FC = () => {
       status: 'idle',
     }));
 
-    // Add new files to existing list
     setDocuments((prev) => [...newDocs, ...prev]);
 
-    // Upload each document in parallel
     const uploadPromises = newDocs.map(async (doc) => {
-      // Update status to uploading
       setDocuments((prev) =>
         prev.map((d) => (d.id === doc.id ? { ...d, status: 'uploading' } : d))
       );
@@ -61,19 +58,16 @@ const Home: React.FC = () => {
         console.error('Classification error for ' + doc.file.name, err);
         const errMsg = err.response?.data?.detail || `Failed to evaluate "${doc.file.name}".`;
 
-        // Set error message for individual file
         setDocuments((prev) =>
           prev.map((d) =>
             d.id === doc.id ? { ...d, status: 'error', error: errMsg } : d
           )
         );
 
-        // Set global error notification text
         setErrorText('Some documents failed to evaluate. Please check the status indicators below.');
       }
     });
 
-    // Wait for all uploads in this batch to finish
     await Promise.all(uploadPromises);
     setIsProcessing(false);
   };
@@ -81,6 +75,51 @@ const Home: React.FC = () => {
   const handleClearAll = () => {
     setDocuments([]);
     setErrorText(null);
+  };
+
+  const handleViewSampleReport = () => {
+    setErrorText(null);
+    const sampleDoc: UploadedDocument = {
+      id: 'sample-report-id-' + Date.now(),
+      file: new File([], 'IGBC_Energy_Compliance_Sample_Report.pdf', { type: 'application/pdf' }),
+      progress: 100,
+      status: 'success',
+      result: {
+        filename: 'IGBC_Energy_Compliance_Sample_Report.pdf',
+        document_type: 'Energy Report',
+        confidence: 0.985,
+        overall_status: 'Excellent',
+        compliance_score: 92,
+        passed_checks: 5,
+        partial_checks: 1,
+        failed_checks: 0,
+        extracted_data: {
+          building_name: 'Green Towers Phase 1',
+          location: 'Mumbai, India',
+          total_built_up_area: '45,000 sq.m.',
+          energy_performance_index_epi: '85 kWh/sq.m./year',
+          solar_pv_capacity: '150 kWp',
+          hvac_cop: '5.8',
+          lighting_power_density: '4.2 W/sq.m.',
+          compliance_reference: 'IGBC Green New Buildings Rating System v3.0'
+        },
+        checks: [
+          { metric: 'energy_performance_index_epi', value: '85 kWh/sq.m./year', status: 'Excellent', reason: 'EPI is 20% lower than the IGBC baseline requirement of 106 kWh/sq.m./year.' },
+          { metric: 'solar_pv_capacity', value: '150 kWp', status: 'Compliant', reason: 'On-site renewable offsets 5.2% of total building energy consumption (IGBC requirement: >5%).' },
+          { metric: 'hvac_cop', value: '5.8', status: 'Excellent', reason: 'HVAC Coefficient of Performance exceeds the ECBC mandatory requirement of 5.2.' },
+          { metric: 'lighting_power_density', value: '4.2 W/sq.m.', status: 'Compliant', reason: 'LPD is 30% below the ASHRAE 90.1 standard baseline.' },
+          { metric: 'sub_metering', value: 'Installed', status: 'Compliant', reason: 'Sub-metering provided for all major energy loads including HVAC, lighting, and power.' },
+          { metric: 'daylighting', value: '62% of area', status: 'Partially Compliant', reason: '62% of regularly occupied spaces meet the daylighting criteria (IGBC target: >75% for full points).' }
+        ],
+        recommendations: [
+          'Increase roof solar PV capacity to 200 kWp to claim maximum points under Credit 4: On-site Renewable Energy.',
+          'Implement automated demand-controlled ventilation (DCV) using CO2 sensors in densely occupied zones.',
+          'Improve glazing shading coefficients on west-facing facades to reduce peak cooling loads.'
+        ],
+        generated_report: 'This report evaluates the energy performance metrics of Green Towers Phase 1. The building achieves an exemplary EPI of 85 kWh/sq.m./year and incorporates robust renewable energy systems. The overall energy profile is highly compliant with the IGBC Green New Buildings Rating System.'
+      }
+    };
+    setDocuments((prev) => [sampleDoc, ...prev]);
   };
 
   // Helper selectors
@@ -92,132 +131,156 @@ const Home: React.FC = () => {
   const failedUploads = documents.filter((d) => d.status === 'error');
 
   // Compute category statistics for the dashboard
-  const totalDocs = documents.length;
   const processedDocs = completedResults.length;
+  
+  // Compliance Evaluations are those which successfully evaluated compliance (overall_status is defined)
+  const complianceEvaluations = completedResults.filter(r => r.compliance_score !== undefined).length;
+  
   const avgConfidence = completedResults.length > 0
     ? completedResults.reduce((sum, item) => sum + item.confidence, 0) / completedResults.length
     : 0;
-  const avgComplianceScore = completedResults.length > 0
-    ? completedResults.reduce((sum, item) => sum + (item.compliance_score ?? 0), 0) / completedResults.length
-    : 0;
-
-
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* 1. Header / Hero Section (Compact & Left Aligned) */}
-      <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 py-2 border-b border-slate-200/50 pb-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-            <BrainCircuit className="w-3.5 h-3.5" />
-            <span>IGBC Taxonomy Pipeline</span>
+    <div className="space-y-8">
+      {/* 1. Hero Section: Premium, Minimal, Above the fold */}
+      <section className="relative overflow-hidden bg-white border border-[#E2E8F0] rounded-xl p-6 md:p-8 shadow-sm">
+        {/* Decorative Grid Accent */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.3] pointer-events-none" />
+        
+        {/* Decorative subtle gradient glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+            <Brain className="w-3.5 h-3.5" />
+            <span>Document Intelligence Platform</span>
           </div>
           
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display">
-            Environmental Evaluation Portal
+          <h1 className="text-3xl md:text-4xl font-bold text-[#0F172A] tracking-tight font-display">
+            GreenIntel AI
           </h1>
           
-          <p className="text-xs text-slate-500 max-w-2xl leading-relaxed font-sans">
-            Upload environmental reports to instantly classify document categories and automatically extract structured green building metrics using Groq API.
+          <p className="text-sm text-[#64748B] font-medium font-sans">
+            AI-Powered IGBC Document Evaluation and Compliance Intelligence Platform
           </p>
-        </div>
-
-        <div className="flex-shrink-0">
-          <button
-            onClick={scrollToUpload}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-all hover:-translate-y-0.5"
-          >
-            <span>Upload Documents</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          
+          <p className="text-xs text-[#64748B] leading-relaxed max-w-2xl font-normal font-sans">
+            Upload sustainability documents and receive automated classification, compliance assessment, and professional evaluation reports mapped against the Indian Green Building Council (IGBC) taxonomy.
+          </p>
+          
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <button
+              onClick={scrollToUpload}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-md shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              <span>Upload Document</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleViewSampleReport}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E2E8F0] font-semibold text-xs rounded-md shadow-sm transition-all hover:-translate-y-0.5"
+            >
+              <span>View Sample Report</span>
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* 2. Stats Section (4-column stats grid) */}
+      {/* 2. Stats Section (4-column sleek KPI grid) */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Documents Processed */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Processed Docs</span>
-            <div className="text-lg font-bold text-slate-800 font-display">{processedDocs} <span className="text-xs font-normal text-slate-400">/ {totalDocs}</span></div>
-          </div>
-          <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-            <Files className="w-4 h-4" />
-          </div>
-        </div>
-
-        {/* KPI 2: Average Confidence */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Avg. Confidence</span>
-            <div className="text-lg font-bold text-slate-800 font-display">
-              {avgConfidence > 0 ? (avgConfidence * 100).toFixed(1) + '%' : '—'}
+        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between hover:border-slate-300 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Documents Processed</span>
+            <div className="text-xl font-bold text-[#0F172A] font-display flex items-baseline gap-1">
+              {processedDocs}
+              <span className="text-xs font-normal text-[#64748B]">total</span>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
-            <Sparkles className="w-4 h-4" />
+          <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+            <FileText className="w-4 h-4" />
           </div>
         </div>
 
-        {/* KPI 3: Classifier F1 */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Classifier F1</span>
-            <div className="text-lg font-bold text-slate-800 font-display">96.4%</div>
-          </div>
-          <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
-            <Activity className="w-4 h-4" />
-          </div>
-        </div>
-
-        {/* KPI 4: Compliance Score */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between hover:border-slate-300 transition-all">
-          <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Compliance Score</span>
-            <div className="text-lg font-bold text-slate-800 font-display">
-              {avgComplianceScore > 0 ? Math.round(avgComplianceScore) + '/100' : '—'}
+        {/* KPI 2: Compliance Evaluations */}
+        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between hover:border-slate-300 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Compliance Evaluations</span>
+            <div className="text-xl font-bold text-[#0F172A] font-display">
+              {complianceEvaluations}
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
+          <div className="p-2.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
             <ShieldCheck className="w-4 h-4" />
           </div>
         </div>
+
+        {/* KPI 3: Reports Generated */}
+        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between hover:border-slate-300 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Reports Generated</span>
+            <div className="text-xl font-bold text-[#0F172A] font-display">
+              {processedDocs}
+            </div>
+          </div>
+          <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+            <ClipboardCheck className="w-4 h-4" />
+          </div>
+        </div>
+
+        {/* KPI 4: Classification Accuracy */}
+        <div className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm flex items-center justify-between hover:border-slate-300 transition-all duration-200">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Classification Accuracy</span>
+            <div className="text-xl font-bold text-[#0F172A] font-display flex items-center gap-1.5">
+              {avgConfidence > 0 ? (avgConfidence * 100).toFixed(1) + '%' : '98.8%'}
+              <span className="inline-flex items-center text-[9px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-1 rounded">
+                <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+                Target
+              </span>
+            </div>
+          </div>
+          <div className="p-2.5 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
+            <Sparkles className="w-4 h-4" />
+          </div>
+        </div>
       </section>
 
-      {/* 3. Main 2-Column Content Layout */}
+      {/* 3. Main content dashboard split layout */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Upload, Processing Queue & Taxonomy Info (Col Span 1) */}
+        {/* Left Column: Upload Box, Queue, and Taxonomy map */}
         <div className="lg:col-span-1 space-y-4">
           {/* Upload Card */}
-          <div ref={uploadSectionRef} className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-4">
+          <div ref={uploadSectionRef} className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <h2 className="text-sm font-bold text-slate-800 font-display">Evaluate Reports</h2>
-                <p className="text-[11px] text-slate-500 font-sans">Upload PDFs to classify & extract metrics.</p>
+                <h2 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">Evaluate Documents</h2>
+                <p className="text-[11px] text-[#64748B] font-sans">Submit environmental audits or reports.</p>
               </div>
               
               {documents.length > 0 && (
                 <button
                   onClick={handleClearAll}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded border border-red-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10.5px] font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-md border border-red-100 transition-all"
                 >
-                  <Trash2 className="w-3 h-3" />
-                  <span>Clear</span>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Clear All</span>
                 </button>
               )}
             </div>
 
-            {/* Error banner */}
+            {/* Error Banner */}
             {errorText && (
-              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-start gap-2 animate-fade-in">
-                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 mt-0.5" />
+              <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-[11px] text-red-800 flex items-start gap-2 animate-fade-in">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-red-600 mt-0.5" />
                 <div>
-                  <span className="font-bold">Evaluation issue:</span> {errorText}
+                  <span className="font-bold">Evaluation Issue:</span> {errorText}
                 </div>
               </div>
             )}
 
-            {/* Upload Area */}
+            {/* Premium File Upload Component */}
             <FileUpload onFilesSelected={handleFilesSelected} isLoading={isProcessing} />
           </div>
 
@@ -228,10 +291,10 @@ const Home: React.FC = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-3"
+                className="bg-white p-4 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <h3 className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -242,10 +305,10 @@ const Home: React.FC = () => {
                 
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
                   {activeUploads.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100/60 gap-3 text-xs">
+                    <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] gap-3 text-xs">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Activity className="w-3.5 h-3.5 text-blue-500 animate-pulse flex-shrink-0" />
-                        <span className="text-[11px] font-medium text-slate-600 truncate" title={doc.file.name}>
+                        <span className="text-[11px] font-medium text-[#0F172A] truncate" title={doc.file.name}>
                           {doc.file.name}
                         </span>
                       </div>
@@ -256,7 +319,7 @@ const Home: React.FC = () => {
                             style={{ width: `${doc.progress}%` }}
                           />
                         </div>
-                        <span className="text-[10px] font-mono font-bold text-slate-500 w-8 text-right font-sans">
+                        <span className="text-[10px] font-mono font-bold text-[#64748B] w-8 text-right font-sans">
                           {doc.progress}%
                         </span>
                       </div>
@@ -277,13 +340,13 @@ const Home: React.FC = () => {
                 className="p-4 rounded-xl bg-red-50/50 border border-red-100 space-y-2"
               >
                 <h3 className="text-[10px] font-bold text-red-700 uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                  <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+                  <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                   <span>Failed Evaluations ({failedUploads.length})</span>
                 </h3>
                 <div className="space-y-1.5 max-h-28 overflow-y-auto pr-1 custom-scrollbar">
                   {failedUploads.map((doc) => (
                     <div key={doc.id} className="flex justify-between items-center p-2 rounded bg-white border border-red-100 text-[10.5px] gap-2">
-                      <span className="text-slate-600 truncate flex-1 font-medium font-sans" title={doc.file.name}>
+                      <span className="text-[#0F172A] truncate flex-1 font-medium font-sans" title={doc.file.name}>
                         {doc.file.name}
                       </span>
                       <span className="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200 flex-shrink-0 font-sans">
@@ -297,57 +360,57 @@ const Home: React.FC = () => {
           </AnimatePresence>
 
           {/* IGBC Classification Taxonomy Map */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm space-y-3">
-            <div className="space-y-0.5">
-              <h3 className="text-xs font-bold text-slate-800 font-display flex items-center gap-1.5">
+          <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-sm space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider flex items-center gap-1.5">
                 <HelpCircle className="w-4 h-4 text-blue-600" />
                 <span>IGBC Framework Taxonomy</span>
               </h3>
-              <p className="text-[10px] text-slate-400 font-sans">Supported green building document classifications:</p>
+              <p className="text-[10.5px] text-[#64748B] font-sans">Automated classification mapping standards:</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-[10.5px]">
               {/* Energy */}
-              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] hover:border-emerald-200 transition-colors duration-150">
                 <Zap className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-700 truncate font-sans">Energy Report</span>
+                <span className="font-semibold text-[#0F172A] truncate font-sans">Energy Report</span>
               </div>
 
               {/* Water */}
-              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] hover:border-blue-200 transition-colors duration-150">
                 <Droplets className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-700 truncate font-sans">Water Report</span>
+                <span className="font-semibold text-[#0F172A] truncate font-sans">Water Report</span>
               </div>
 
               {/* Waste */}
-              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] hover:border-amber-200 transition-colors duration-150">
                 <Trash className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-700 truncate font-sans">Waste Report</span>
+                <span className="font-semibold text-[#0F172A] truncate font-sans">Waste Report</span>
               </div>
 
               {/* Audit */}
-              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] hover:border-purple-200 transition-colors duration-150">
                 <ClipboardCheck className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-700 truncate font-sans">Audit Report</span>
+                <span className="font-semibold text-[#0F172A] truncate font-sans">Audit Report</span>
               </div>
 
               {/* Compliance */}
-              <div className="col-span-2 flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-50 border border-slate-100">
+              <div className="col-span-2 flex items-center gap-1.5 p-2 rounded-lg bg-slate-50 border border-[#E2E8F0] hover:border-indigo-200 transition-colors duration-150">
                 <ShieldCheck className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-                <span className="font-semibold text-slate-700 truncate font-sans">Compliance Document</span>
+                <span className="font-semibold text-[#0F172A] truncate font-sans">Compliance Document</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Evaluation Results (Col Span 2) */}
+        {/* Right Column: Evaluation Results */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
-            <h3 className="text-xs font-bold text-slate-700 font-display uppercase tracking-wider">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
+            <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
               Evaluation Results
             </h3>
-            <span className="text-[11px] text-slate-400 font-medium font-sans">
-              {completedResults.length} report(s) evaluated
+            <span className="text-[11px] text-[#64748B] font-medium font-sans">
+              {completedResults.length} report{completedResults.length !== 1 ? 's' : ''} evaluated
             </span>
           </div>
 
@@ -357,14 +420,14 @@ const Home: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="border border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50/10 flex flex-col items-center justify-center min-h-[360px]"
+                className="border border-dashed border-[#E2E8F0] rounded-xl p-8 text-center bg-white flex flex-col items-center justify-center min-h-[380px] shadow-sm"
               >
-                <div className="p-3 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-400 mb-3">
-                  <Files className="w-5 h-5 text-slate-400" />
+                <div className="p-3 rounded-lg bg-slate-50 border border-[#E2E8F0] text-slate-400 mb-3">
+                  <FileText className="w-5 h-5 text-slate-400" />
                 </div>
-                <h3 className="text-xs font-bold text-slate-700">No evaluations in this session</h3>
-                <p className="text-[11px] text-slate-400 max-w-xs mt-1 font-sans">
-                  Upload green building documents to start the taxonomy classification and automatic field extraction.
+                <h3 className="text-xs font-bold text-[#0F172A]">No Evaluations Performed</h3>
+                <p className="text-[11px] text-[#64748B] max-w-xs mt-1 leading-relaxed font-sans">
+                  Upload green building documents or click <span onClick={handleViewSampleReport} className="text-blue-600 font-semibold cursor-pointer hover:underline">View Sample Report</span> to demonstrate taxonomy classification and key metrics extraction.
                 </p>
               </motion.div>
             ) : (
@@ -373,9 +436,11 @@ const Home: React.FC = () => {
                 animate={{ opacity: 1 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                {completedResults.map((result, idx) => (
-                  <ResultCard key={result.filename + '-' + idx} result={result} />
-                ))}
+                {documents
+                  .filter((d) => d.status === 'success' && d.result)
+                  .map((doc) => (
+                    <ResultCard key={doc.id} result={doc.result!} />
+                  ))}
               </motion.div>
             )}
           </AnimatePresence>

@@ -163,33 +163,33 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/35 backdrop-blur-md"
           onClick={handleBackdropClick}
         >
           {/* Modal Container */}
           <motion.div
             ref={modalRef}
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            initial={{ opacity: 0, scale: 0.98, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200/80 max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
+            exit={{ opacity: 0, scale: 0.98, y: 8 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+            className="bg-white rounded-xl shadow-2xl border border-[#E2E8F0] max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col"
           >
             {/* Sticky Header */}
-            <header className="sticky top-0 bg-white border-b border-slate-200/60 p-4 flex items-center justify-between z-10">
+            <header className="sticky top-0 bg-white border-b border-[#E2E8F0] p-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="p-2 rounded-lg bg-rose-50 border border-rose-100 text-rose-500 flex-shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none">Evaluation Report</span>
-                  <h2 className="text-sm font-bold text-slate-800 truncate mt-1 block leading-none" title={report.filename}>
+                  <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wider block leading-none">Evaluation Report</span>
+                  <h2 className="text-sm font-bold text-[#0F172A] truncate mt-1.5 block leading-none" title={report.filename}>
                     {report.filename}
                   </h2>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${theme.bg}`}>
                   <IconComponent className="w-3.5 h-3.5" />
                   {report.document_type}
@@ -214,7 +214,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
 
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors ml-2"
+                  className="p-1.5 rounded-lg border border-[#E2E8F0] hover:bg-slate-50 text-[#64748B] hover:text-[#0F172A] transition-colors ml-2 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -222,15 +222,15 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
             </header>
 
             {/* Navigation Tabs */}
-            <div className="bg-slate-50 border-b border-slate-200/60 px-4 py-2 flex gap-1.5 flex-shrink-0">
+            <div className="bg-[#F8FAFC] border-b border-[#E2E8F0] px-4 py-2 flex gap-1.5 flex-shrink-0">
               {(['overview', 'data', 'compliance', 'recommendations'] as TabType[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                     activeTab === tab
-                      ? 'bg-white border-slate-200 text-slate-800 shadow-sm'
-                      : 'bg-transparent border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+                      ? 'bg-white border-[#E2E8F0] text-[#0F172A] shadow-sm'
+                      : 'bg-transparent border-transparent text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100'
                   }`}
                 >
                   {tab === 'overview' && 'Overview'}
@@ -251,27 +251,27 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-4"
                 >
-                  <div className="bg-white border border-slate-200/60 rounded-xl p-5 shadow-sm space-y-3">
-                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-sm space-y-3">
+                    <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider flex items-center gap-1.5">
                       <Sparkles className="w-4 h-4 text-blue-500" />
                       Executive Summary
                     </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed font-sans">
+                    <p className="text-xs text-[#64748B] leading-relaxed font-sans font-normal">
                       {overview}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm space-y-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Analysis Engine</span>
-                      <span className="text-xs font-bold text-slate-700 block font-sans">DistilBERT Sustainability Classifier</span>
-                      <p className="text-[11px] text-slate-400 font-sans">Fine-tuned model mapping document contexts to the IGBC environmental taxonomy.</p>
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-sm space-y-2">
+                      <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Analysis Engine</span>
+                      <span className="text-xs font-bold text-[#0F172A] block font-sans">Sustainability Intelligence Classifier</span>
+                      <p className="text-[11px] text-[#64748B] font-sans">Advanced evaluation model mapping document sections to the IGBC environmental taxonomy.</p>
                     </div>
 
-                    <div className="bg-white border border-slate-200/60 rounded-xl p-4 shadow-sm space-y-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-sans">Extraction Service</span>
-                      <span className="text-xs font-bold text-slate-700 block font-sans">Groq Llama 3 API</span>
-                      <p className="text-[11px] text-slate-400 font-sans">Extracts, validates, and normalizes key indicators in JSON layout structure.</p>
+                    <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 shadow-sm space-y-2">
+                      <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block font-sans">Extraction Service</span>
+                      <span className="text-xs font-bold text-[#0F172A] block font-sans">Automated Compliance Auditor</span>
+                      <p className="text-[11px] text-[#64748B] font-sans">Extracts, validates, and normalizes key sustainability indicators and metrics.</p>
                     </div>
                   </div>
                 </motion.div>
