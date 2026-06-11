@@ -9,11 +9,13 @@ try:
     from backend.utils.classifier import classify_text
     from backend.services.information_extractor import extract_information
     from backend.services.compliance_checker import evaluate_compliance
+    from backend.database.mongodb import check_connection
 except ImportError:
     from utils.pdf_extractor import extract_text_from_pdf
     from utils.classifier import classify_text
     from services.information_extractor import extract_information
     from services.compliance_checker import evaluate_compliance
+    from database.mongodb import check_connection
 
 router = APIRouter()
 
@@ -42,6 +44,12 @@ async def upload_file(file: UploadFile = File(...)):
     extract structured fields using Groq (Llama-3.3-70b-versatile),
     and return the classification & extraction results.
     """
+    if not check_connection():
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection is offline. Document evaluation is unavailable."
+        )
+
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -121,6 +129,12 @@ async def upload_multiple_files(files: List[UploadFile] = File(...)):
     Upload multiple PDFs, extract text from each, predict document types,
     extract structured fields using Groq, and return a list of results.
     """
+    if not check_connection():
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection is offline. Document evaluation is unavailable."
+        )
+
     results = []
     
     for file in files:

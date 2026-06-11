@@ -8,6 +8,15 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+// Attach Authorization Token if exists
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('greenintel_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 /**
  * Uploads a single document to the server for classification.
  * Tracks progress using the provided callback.

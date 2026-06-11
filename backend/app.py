@@ -1,30 +1,49 @@
 import os
+import logging
+import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Setup custom logging for app
+logger = logging.getLogger("greenintel.app")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - [%(name)s] - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.propagate = False
 
 try:
     from backend.routes.document_routes import router as document_router
     from backend.utils.classifier import initialize_model_if_missing
+    from backend.database.mongodb import connect_to_mongo, close_mongo_connection, check_connection
+    from backend.routes.auth_routes import router as auth_router
 except ImportError:
     from routes.document_routes import router as document_router
     from utils.classifier import initialize_model_if_missing
+    from database.mongodb import connect_to_mongo, close_mongo_connection, check_connection
+    from routes.auth_routes import router as auth_router
 
 app = FastAPI(
     title="IGBC Document Evaluation API",
-    description="Backend API for classifying IGBC documents using DistilBERT",
+    description="Backend API for classifying IGBC documents and compliance evaluation",
     version="1.0.0"
 )
 
 # CORS configurations
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this to authorized origins (e.g., frontend host)
+    allow_origins=["*"],  # In production, restrict this to authorized origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Ensure folders exist
+# Ensure uploads and models directory exist
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "uploads"))
 MODEL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "models", "document_classifier"))
 
@@ -33,19 +52,54 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 
 # Include routes
 app.include_router(document_router, tags=["document-evaluation"])
+app.include_router(auth_router)
 
 @app.on_event("startup")
-def startup_event():
+async def startup_event():
     """
-    Runs on startup to ensure the local DistilBERT model files
-    are loaded or initialized correctly.
+    Runs on application startup:
+    1. Displays startup banner
+    2. Establishes MongoDB connection
+    3. Initializes DistilBERT classifier model
+    4. Displays ready status
     """
-    print("Initializing server and checking for document classifier model...")
+    print("🚀 Starting GreenIntel AI Server...")
+    logger.info("🚀 Starting GreenIntel AI Server...")
+    
+    # Establish MongoDB Atlas Connection
+    db_success = await connect_to_mongo()
+    
+    # Initialize Document Classifier
+    logger.info("Checking for document classifier model...")
     try:
         initialize_model_if_missing()
-        print("Document classifier ready.")
+        logger.info("Document classifier ready.")
     except Exception as e:
-        print(f"Error during startup model initialization: {e}")
+        logger.error(f"Error during startup model initialization: {e}")
+        
+    if db_success:
+        print("✅ Server Ready")
+        logger.info("✅ Server Ready")
+    else:
+        logger.warning("Server startup completed with disconnected MongoDB Atlas status.")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """
+    Runs on application shutdown to close active database connections.
+    """
+    await close_mongo_connection()
+
+@app.get("/health")
+async def health_check():
+    """
+    Health Check API to verify service status and MongoDB connection.
+    """
+    is_db_connected = check_connection()
+    return {
+        "server": "running",
+        "mongodb": "connected" if is_db_connected else "disconnected"
+    }
 
 @app.get("/")
 def read_root():
