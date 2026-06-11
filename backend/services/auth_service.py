@@ -2,7 +2,10 @@ import logging
 from datetime import datetime
 from bson import ObjectId
 from fastapi import HTTPException, status
-from database.mongodb import get_database, check_connection
+try:
+    from backend.database.mongodb import get_database, check_connection, DatabaseOfflineException
+except ImportError:
+    from database.mongodb import get_database, check_connection, DatabaseOfflineException
 from utils.jwt_handler import get_password_hash, verify_password
 
 logger = logging.getLogger("greenintel.auth_service")
@@ -10,14 +13,11 @@ logger = logging.getLogger("greenintel.auth_service")
 def verify_db_connected():
     """
     Verifies that MongoDB Atlas is active and accessible. If not, raises
-    a 500 Service Unavailable exception immediately.
+    a DatabaseOfflineException immediately.
     """
     if not check_connection():
         logger.error("Database transaction rejected: MongoDB Atlas is disconnected.")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection is offline. Service is currently unavailable."
-        )
+        raise DatabaseOfflineException()
 
 async def get_user_by_email(email: str):
     """

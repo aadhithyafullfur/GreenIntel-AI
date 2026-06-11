@@ -1,6 +1,7 @@
 import os
 import shutil
-from fastapi import APIRouter, File, UploadFile, HTTPException, status
+from datetime import datetime
+from fastapi import APIRouter, File, UploadFile, HTTPException, status, Request
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
@@ -9,13 +10,15 @@ try:
     from backend.utils.classifier import classify_text
     from backend.services.information_extractor import extract_information
     from backend.services.compliance_checker import evaluate_compliance
-    from backend.database.mongodb import check_connection
+    from backend.database.mongodb import check_connection, get_database, DatabaseOfflineException
+    from backend.utils.jwt_handler import verify_access_token
 except ImportError:
     from utils.pdf_extractor import extract_text_from_pdf
     from utils.classifier import classify_text
     from services.information_extractor import extract_information
     from services.compliance_checker import evaluate_compliance
-    from database.mongodb import check_connection
+    from database.mongodb import check_connection, get_database, DatabaseOfflineException
+    from utils.jwt_handler import verify_access_token
 
 router = APIRouter()
 
@@ -38,17 +41,14 @@ UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uplo
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload", response_model=ClassificationResponse)
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(request: Request, file: UploadFile = File(...)):
     """
     Upload a single PDF, extract its text, predict its document type using DistilBERT,
     extract structured fields using Groq (Llama-3.3-70b-versatile),
-    and return the classification & extraction results.
+    and return the classification & extraction results, saving to MongoDB.
     """
     if not check_connection():
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection is offline. Document evaluation is unavailable."
-        )
+        raise DatabaseOfflineException()
 
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(
@@ -93,6 +93,36 @@ async def upload_file(file: UploadFile = File(...)):
         # Evaluate compliance rules on extracted metrics
         comp_res = evaluate_compliance(doc_type, extracted_data or {})
         
+        # Determine optional authenticated user
+        user_id = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                payload = verify_access_token(token)
+                if payload:
+                    user_id = payload.get("sub")
+            except Exception:
+                pass
+
+        # Save to database
+        db = get_database()
+        eval_doc = {
+            "user_id": user_id,
+            "filename": file.filename,
+            "document_type": doc_type,
+            "confidence": float(confidence),
+            "compliance_score": comp_res.get("compliance_score"),
+            "overall_status": comp_res.get("overall_status"),
+            "passed_checks": comp_res.get("passed_checks"),
+            "failed_checks": comp_res.get("failed_checks"),
+            "partial_checks": comp_res.get("partial_checks"),
+            "checks": comp_res.get("checks"),
+            "recommendations": comp_res.get("recommendations"),
+            "created_at": datetime.utcnow().isoformat()
+        }
+        await db.evaluations.insert_one(eval_doc)
+        
         return ClassificationResponse(
             filename=file.filename,
             document_type=doc_type,
@@ -124,19 +154,29 @@ async def upload_file(file: UploadFile = File(...)):
                 pass
 
 @router.post("/upload-multiple", response_model=List[ClassificationResponse])
-async def upload_multiple_files(files: List[UploadFile] = File(...)):
+async def upload_multiple_files(request: Request, files: List[UploadFile] = File(...)):
     """
     Upload multiple PDFs, extract text from each, predict document types,
-    extract structured fields using Groq, and return a list of results.
+    extract structured fields using Groq, and return a list of results, saving to MongoDB.
     """
     if not check_connection():
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection is offline. Document evaluation is unavailable."
-        )
+        raise DatabaseOfflineException()
 
     results = []
+    db = get_database()
     
+    # Determine optional authenticated user
+    user_id = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            payload = verify_access_token(token)
+            if payload:
+                user_id = payload.get("sub")
+        except Exception:
+            pass
+            
     for file in files:
         if not file.filename.lower().endswith(".pdf"):
             raise HTTPException(
@@ -181,6 +221,23 @@ async def upload_multiple_files(files: List[UploadFile] = File(...)):
             # Evaluate compliance rules on extracted metrics
             comp_res = evaluate_compliance(doc_type, extracted_data or {})
             
+            # Save to database
+            eval_doc = {
+                "user_id": user_id,
+                "filename": file.filename,
+                "document_type": doc_type,
+                "confidence": float(confidence),
+                "compliance_score": comp_res.get("compliance_score"),
+                "overall_status": comp_res.get("overall_status"),
+                "passed_checks": comp_res.get("passed_checks"),
+                "failed_checks": comp_res.get("failed_checks"),
+                "partial_checks": comp_res.get("partial_checks"),
+                "checks": comp_res.get("checks"),
+                "recommendations": comp_res.get("recommendations"),
+                "created_at": datetime.utcnow().isoformat()
+            }
+            await db.evaluations.insert_one(eval_doc)
+            
             results.append(
                 ClassificationResponse(
                     filename=file.filename,
@@ -213,4 +270,3 @@ async def upload_multiple_files(files: List[UploadFile] = File(...)):
                     pass
                     
     return results
-

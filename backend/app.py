@@ -20,19 +20,33 @@ if not logger.handlers:
 try:
     from backend.routes.document_routes import router as document_router
     from backend.utils.classifier import initialize_model_if_missing
-    from backend.database.mongodb import connect_to_mongo, close_mongo_connection, check_connection
+    from backend.database.mongodb import connect_to_mongo, close_mongo_connection, check_connection, DatabaseOfflineException
     from backend.routes.auth_routes import router as auth_router
+    from backend.routes.evaluation_routes import router as evaluation_router
 except ImportError:
     from routes.document_routes import router as document_router
     from utils.classifier import initialize_model_if_missing
-    from database.mongodb import connect_to_mongo, close_mongo_connection, check_connection
+    from database.mongodb import connect_to_mongo, close_mongo_connection, check_connection, DatabaseOfflineException
     from routes.auth_routes import router as auth_router
+    from routes.evaluation_routes import router as evaluation_router
+
+from fastapi.responses import JSONResponse
 
 app = FastAPI(
     title="IGBC Document Evaluation API",
     description="Backend API for classifying IGBC documents and compliance evaluation",
     version="1.0.0"
 )
+
+@app.exception_handler(DatabaseOfflineException)
+async def database_offline_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": exc.message
+        }
+    )
 
 # CORS configurations
 app.add_middleware(
@@ -53,6 +67,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 # Include routes
 app.include_router(document_router, tags=["document-evaluation"])
 app.include_router(auth_router)
+app.include_router(evaluation_router)
 
 @app.on_event("startup")
 async def startup_event():

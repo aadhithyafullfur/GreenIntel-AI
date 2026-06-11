@@ -1,39 +1,67 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, ArrowRight, Calendar, ArrowDownToLine, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import api from '../services/api';
+
+interface EvaluationLog {
+  id: string;
+  filename: string;
+  type: string;
+  score: number;
+  status: string;
+  date: string;
+  checksPassed: string;
+}
 
 const History: React.FC = () => {
-  // Mock evaluations history
-  const historyData = [
-    {
-      id: 'eval-1',
-      filename: 'IGBC_Energy_Compliance_Final_Report_v2.pdf',
-      type: 'Energy Report',
-      score: 94,
-      status: 'Excellent',
-      date: '2026-06-10',
-      checksPassed: '5/6 checks'
-    },
-    {
-      id: 'eval-2',
-      filename: 'Water_Recycling_Audit_GreenTower_2026.pdf',
-      type: 'Water Report',
-      score: 88,
-      status: 'Compliant',
-      date: '2026-06-08',
-      checksPassed: '4/5 checks'
-    },
-    {
-      id: 'eval-3',
-      filename: 'Solid_Waste_Management_Plan_Phase3.pdf',
-      type: 'Waste Report',
-      score: 82,
-      status: 'Compliant',
-      date: '2026-05-24',
-      checksPassed: '4/4 checks'
+  const [historyData, setHistoryData] = useState<EvaluationLog[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchHistory = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await api.get('/api/evaluations/history');
+      setHistoryData(response.data);
+    } catch (err: any) {
+      console.error("Failed to load history:", err);
+      setError(err.response?.data?.detail || "Failed to load evaluation history from server.");
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const handleClearLogs = async () => {
+    const confirmClear = window.confirm("Are you sure you want to clear all evaluation logs? This action is permanent and cannot be undone.");
+    if (!confirmClear) return;
+    
+    try {
+      await api.post('/api/evaluations/clear-logs');
+      alert("Logs cleared successfully.");
+      setHistoryData([]);
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to clear logs.");
+    }
+  };
+
+  const handleDeleteLog = async (id: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this specific evaluation log?");
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/api/evaluations/${id}`);
+      alert("Evaluation log deleted successfully.");
+      setHistoryData(prev => prev.filter(item => item.id !== id));
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to delete log.");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -59,72 +87,95 @@ const History: React.FC = () => {
       <div className="bg-card-base/40 border border-border-base rounded-xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-border-base bg-card-base flex items-center justify-between">
           <span className="text-xs font-bold text-text-main uppercase tracking-wider">Historical Logs</span>
-          <button className="text-[10px] font-bold text-red-500 hover:text-red-600 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded cursor-pointer">
-            Clear Logs
-          </button>
-        </div>
-
-        <div className="divide-y divide-border-base/40">
-          {historyData.map((item, idx) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-card-base/60 transition-colors"
+          {historyData.length > 0 && (
+            <button 
+              onClick={handleClearLogs}
+              className="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded cursor-pointer transition-colors"
             >
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xs font-bold text-text-main truncate" title={item.filename}>
-                    {item.filename}
-                  </span>
-                  <span className="text-[9.5px] font-semibold bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-md">
-                    {item.type}
-                  </span>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-4 text-[10.5px] text-text-muted font-sans">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-text-muted/75" />
-                    <span>{item.date}</span>
-                  </div>
-                  <div className="w-1 h-1 rounded-full bg-border-base" />
-                  <div className="flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>{item.checksPassed}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status and Actions */}
-              <div className="flex items-center gap-4 justify-between md:justify-end">
-                <div className="text-right">
-                  <div className="text-sm font-bold text-text-main">{item.score}%</div>
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    {item.status}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => alert("Downloading PDF summary report...")}
-                    className="p-2 bg-card-base border border-border-base hover:border-primary/40 hover:bg-primary/5 text-text-main rounded-lg cursor-pointer transition-all"
-                    title="Download Report"
-                  >
-                    <ArrowDownToLine className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => alert("Report deleted from logs.")}
-                    className="p-2 bg-card-base border border-border-base hover:border-red-500/40 hover:bg-red-500/5 text-text-muted hover:text-red-500 rounded-lg cursor-pointer transition-all"
-                    title="Delete Log"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              Clear Logs
+            </button>
+          )}
         </div>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-xs font-semibold text-text-muted font-sans">
+            Loading evaluation logs...
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center text-xs font-semibold text-red-500 font-sans">
+            {error}
+          </div>
+        ) : historyData.length === 0 ? (
+          <div className="p-8 text-center bg-card-base/50 min-h-[200px] flex flex-col items-center justify-center">
+            <ShieldCheck className="w-8 h-8 text-text-muted mb-2" />
+            <h3 className="text-xs font-bold text-text-main">No evaluation history available.</h3>
+            <p className="text-[11px] text-text-muted mt-1 max-w-xs font-sans">
+              Evaluate your sustainability documents to start building your compliance logs history.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border-base/40">
+            {historyData.map((item, idx) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-card-base/60 transition-colors"
+              >
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xs font-bold text-text-main truncate" title={item.filename}>
+                      {item.filename}
+                    </span>
+                    <span className="text-[9.5px] font-semibold bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-md">
+                      {item.type}
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-[10.5px] text-text-muted font-sans">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-text-muted/75" />
+                      <span>{item.date}</span>
+                    </div>
+                    <div className="w-1 h-1 rounded-full bg-border-base" />
+                    <div className="flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>{item.checksPassed}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status and Actions */}
+                <div className="flex items-center gap-4 justify-between md:justify-end">
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-text-main">{item.score}%</div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      {item.status}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => alert("Downloading PDF summary report...")}
+                      className="p-2 bg-card-base border border-border-base hover:border-primary/40 hover:bg-primary/5 text-text-main rounded-lg cursor-pointer transition-all"
+                      title="Download Report"
+                    >
+                      <ArrowDownToLine className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteLog(item.id)}
+                      className="p-2 bg-card-base border border-border-base hover:border-red-500/40 hover:bg-red-500/5 text-text-muted hover:text-red-500 rounded-lg cursor-pointer transition-all"
+                      title="Delete Log"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

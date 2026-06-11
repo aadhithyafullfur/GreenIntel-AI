@@ -1,12 +1,26 @@
 import os
 import sys
 import logging
+import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
-load_dotenv()
+# 2. Verify environment variables are loaded from .env before database initialization
+# Resolve absolute path to .env file relative to this module
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env_path = os.path.join(base_dir, ".env")
+load_dotenv(env_path)
 
-# Setup Custom SUCCESS log level
+MONGODB_URI = os.getenv("MONGODB_URI")
+DB_NAME = "greenintel_ai"
+
+# 3. Verify MONGODB_URI exists and log a clear startup message
+if MONGODB_URI:
+    print("✅ MONGODB_URI Loaded")
+else:
+    print("❌ MONGODB_URI Missing")
+
+# Setup custom logging for database connection status
 SUCCESS_LEVEL_NUM = 25
 logging.addLevelName(SUCCESS_LEVEL_NUM, "SUCCESS")
 
@@ -16,7 +30,6 @@ def success(self, message, *args, **kws):
 
 logging.Logger.success = success
 
-# Configure GreenIntel database logger
 logger = logging.getLogger("greenintel.database")
 logger.setLevel(logging.INFO)
 if not logger.handlers:
@@ -26,87 +39,145 @@ if not logger.handlers:
     logger.addHandler(handler)
     logger.propagate = False
 
-MONGODB_URI = os.getenv("MONGODB_URI")
-DB_NAME = "greenintel_ai"
-
 client = None
 db = None
 is_connected = False
+monitor_task = None
 
-# Collections
-users_collection = None
-reports_collection = None
-evaluations_collection = None
+# Custom Database Offline Exception to handle errors gracefully
+class DatabaseOfflineException(Exception):
+    def __init__(self, message: str = "Database unavailable. Please try again later."):
+        self.message = message
+        super().__init__(self.message)
 
 async def connect_to_mongo():
     """
-    Connects to MongoDB Atlas asynchronously, verifies connection using ping,
-    and initializes the database and collections references.
+    Connects to MongoDB Atlas, pings it, and initializes the database and monitoring loop.
+    Prints the required connection statuses on success or failure.
     """
-    global client, db, is_connected, users_collection, reports_collection, evaluations_collection
+    global client, db, is_connected
+    
+    print("[DB] Connecting to MongoDB Atlas...")
+    logger.info("[DB] Connecting to MongoDB Atlas...")
     
     if not MONGODB_URI:
-        error_msg = "MONGODB_URI environment variable is missing or empty in .env."
         print("==================================================")
-        print("❌ MongoDB Connection Failed")
-        print(f"Error: {error_msg}")
-        print("=====================")
-        logger.error(f"MongoDB Connection Failed: {error_msg}")
+        print("❌ MongoDB Atlas Connection Failed")
+        print("Reason: MONGODB_URI environment variable is missing.")
+        print("==================================================")
+        logger.error("[DB] MONGODB_URI environment variable is missing.")
         is_connected = False
         return False
         
     try:
-        # Create client and set serverSelectionTimeoutMS to 5 seconds
-        client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+        # 17. Configure timeouts and instantiate Client
+        client = AsyncIOMotorClient(
+            MONGODB_URI, 
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=10000
+        )
         
-        # Verify connection
+        # Verify connection by running a ping command (9. Remove fake connected states)
         await client.admin.command("ping")
         
         db = client[DB_NAME]
-        users_collection = db["users"]
-        reports_collection = db["reports"]
-        evaluations_collection = db["evaluations"]
         is_connected = True
         
-        # Console output as requested
+        print("[DB] Connection successful")
+        print("[DB] Ping successful")
+        logger.success(f"MongoDB Atlas Connected Successfully to database: {DB_NAME}")
+        
+        # 5. Print startup success banner
+        print("==================================================")
+        print("🚀 Starting GreenIntel AI Server")
         print("==================================================")
         print("✅ MongoDB Atlas Connected Successfully")
-        print(f"📂 Database: {DB_NAME}")
-        print("==========================")
+        print(f"📦 Database: {DB_NAME}")
+        print("==================================================")
         
-        logger.success(f"MongoDB Atlas Connected Successfully to database: {DB_NAME}")
+        # 13. Start background reconnection and connection monitoring task
+        start_connection_monitor()
+        
         return True
     except Exception as e:
         client = None
         db = None
-        users_collection = None
-        reports_collection = None
-        evaluations_collection = None
         is_connected = False
         
-        # Console output as requested
+        # 6. Print failure message
         print("==================================================")
-        print("❌ MongoDB Connection Failed")
-        print(f"Error: {str(e)}")
-        print("=====================")
-        
-        logger.error(f"MongoDB Connection Failed. Error: {str(e)}")
+        print("❌ MongoDB Atlas Connection Failed")
+        print(f"Reason: {str(e)}")
+        print("==================================================")
+        logger.error(f"[DB] Connection failed: {str(e)}")
         return False
+
+def start_connection_monitor():
+    """
+    Spawns the connection monitor task inside the current running event loop.
+    """
+    global monitor_task
+    try:
+        loop = asyncio.get_running_loop()
+        if monitor_task is None or monitor_task.done():
+            monitor_task = loop.create_task(monitor_connection_loop())
+    except RuntimeError:
+        pass
+
+async def monitor_connection_loop():
+    """
+    Periodically checks connection to MongoDB Atlas, updating status and attempting reconnection.
+    Logs using specific connection lost/reconnect patterns (14. Add detailed logging).
+    """
+    global client, db, is_connected
+    while True:
+        await asyncio.sleep(10)
+        if client:
+            try:
+                # Fast check to see if cluster is still reachable
+                await asyncio.wait_for(client.admin.command("ping"), timeout=3.0)
+                if not is_connected:
+                    print("[DB] Connection successful")
+                    print("[DB] Ping successful")
+                    logger.info("[DB] Connection restored successfully.")
+                    is_connected = True
+            except Exception:
+                if is_connected:
+                    print("[DB] Connection lost")
+                    logger.warning("[DB] Connection lost")
+                    is_connected = False
+                
+                print("[DB] Reconnecting...")
+                logger.info("[DB] Reconnecting...")
+                try:
+                    client.close()
+                    client = AsyncIOMotorClient(
+                        MONGODB_URI, 
+                        serverSelectionTimeoutMS=5000,
+                        connectTimeoutMS=5000,
+                        socketTimeoutMS=10000
+                    )
+                    await asyncio.wait_for(client.admin.command("ping"), timeout=5.0)
+                    db = client[DB_NAME]
+                    is_connected = True
+                    print("[DB] Connection successful")
+                    print("[DB] Ping successful")
+                    logger.info("[DB] Connection restored successfully.")
+                except Exception as ex:
+                    logger.error(f"[DB] Reconnection attempt failed: {str(ex)}")
 
 async def close_mongo_connection():
     """
-    Closes the MongoDB connection gracefully.
+    Gracefully closes the MongoDB client connection.
     """
-    global client, db, is_connected, users_collection, reports_collection, evaluations_collection
+    global client, db, is_connected
     if client:
         client.close()
         print("🔴 MongoDB Connection Closed")
         logger.info("🔴 MongoDB Connection Closed")
         client = None
         db = None
-        users_collection = None
-        reports_collection = None
-        evaluations_collection = None
         is_connected = False
 
 def get_database():

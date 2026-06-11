@@ -1,22 +1,49 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FileText, Sparkles, Trash2, AlertCircle, 
+  FileText, Trash2, AlertCircle, 
   HelpCircle, Zap, Droplets, Trash, ClipboardCheck, 
   ShieldCheck, ArrowRight, Brain, Activity,
-  TrendingUp
+  TrendingUp, Sparkles
 } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import ResultCard from '../components/ResultCard';
 import type { UploadedDocument } from '../types/document';
 import { uploadSingleDocument } from '../services/api';
+import api from '../services/api';
+
+interface DashboardStats {
+  documents_processed: number;
+  compliance_evaluations: number;
+  reports_generated: number;
+  classification_accuracy: number;
+}
 
 const Home: React.FC = () => {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    documents_processed: 0,
+    compliance_evaluations: 0,
+    reports_generated: 0,
+    classification_accuracy: 0.0
+  });
   
   const uploadSectionRef = useRef<HTMLDivElement>(null);
+
+  const fetchStats = async () => {
+    try {
+      const response = await api.get('/api/evaluations/stats');
+      setStats(response.data);
+    } catch (err) {
+      console.error("Failed to fetch dashboard stats:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
   const scrollToUpload = () => {
     uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -70,6 +97,8 @@ const Home: React.FC = () => {
 
     await Promise.all(uploadPromises);
     setIsProcessing(false);
+    // Refresh dashboard stats to show the newly processed documents
+    fetchStats();
   };
 
   const handleClearAll = () => {
@@ -77,68 +106,13 @@ const Home: React.FC = () => {
     setErrorText(null);
   };
 
-  const handleViewSampleReport = () => {
-    setErrorText(null);
-    const sampleDoc: UploadedDocument = {
-      id: 'sample-report-id-' + Date.now(),
-      file: new File([], 'IGBC_Energy_Compliance_Sample_Report.pdf', { type: 'application/pdf' }),
-      progress: 100,
-      status: 'success',
-      result: {
-        filename: 'IGBC_Energy_Compliance_Sample_Report.pdf',
-        document_type: 'Energy Report',
-        confidence: 0.985,
-        overall_status: 'Excellent',
-        compliance_score: 92,
-        passed_checks: 5,
-        partial_checks: 1,
-        failed_checks: 0,
-        extracted_data: {
-          building_name: 'Green Towers Phase 1',
-          location: 'Mumbai, India',
-          total_built_up_area: '45,000 sq.m.',
-          energy_performance_index_epi: '85 kWh/sq.m./year',
-          solar_pv_capacity: '150 kWp',
-          hvac_cop: '5.8',
-          lighting_power_density: '4.2 W/sq.m.',
-          compliance_reference: 'IGBC Green New Buildings Rating System v3.0'
-        },
-        checks: [
-          { metric: 'energy_performance_index_epi', value: '85 kWh/sq.m./year', status: 'Excellent', reason: 'EPI is 20% lower than the IGBC baseline requirement of 106 kWh/sq.m./year.' },
-          { metric: 'solar_pv_capacity', value: '150 kWp', status: 'Compliant', reason: 'On-site renewable offsets 5.2% of total building energy consumption (IGBC requirement: >5%).' },
-          { metric: 'hvac_cop', value: '5.8', status: 'Excellent', reason: 'HVAC Coefficient of Performance exceeds the ECBC mandatory requirement of 5.2.' },
-          { metric: 'lighting_power_density', value: '4.2 W/sq.m.', status: 'Compliant', reason: 'LPD is 30% below the ASHRAE 90.1 standard baseline.' },
-          { metric: 'sub_metering', value: 'Installed', status: 'Compliant', reason: 'Sub-metering provided for all major energy loads including HVAC, lighting, and power.' },
-          { metric: 'daylighting', value: '62% of area', status: 'Partially Compliant', reason: '62% of regularly occupied spaces meet the daylighting criteria (IGBC target: >75% for full points).' }
-        ],
-        recommendations: [
-          'Increase roof solar PV capacity to 200 kWp to claim maximum points under Credit 4: On-site Renewable Energy.',
-          'Implement automated demand-controlled ventilation (DCV) using CO2 sensors in densely occupied zones.',
-          'Improve glazing shading coefficients on west-facing facades to reduce peak cooling loads.'
-        ],
-        generated_report: 'This report evaluates the energy performance metrics of Green Towers Phase 1. The building achieves an exemplary EPI of 85 kWh/sq.m./year and incorporates robust renewable energy systems. The overall energy profile is highly compliant with the IGBC Green New Buildings Rating System.'
-      }
-    };
-    setDocuments((prev) => [sampleDoc, ...prev]);
-  };
-
-  // Helper selectors
+  // Helper selectors for currently uploaded session items
   const activeUploads = documents.filter((d) => d.status === 'uploading');
   const completedResults = documents
     .filter((d) => d.status === 'success' && d.result)
     .map((d) => d.result!);
 
   const failedUploads = documents.filter((d) => d.status === 'error');
-
-  // Compute category statistics for the dashboard
-  const processedDocs = completedResults.length;
-  
-  // Compliance Evaluations are those which successfully evaluated compliance (overall_status is defined)
-  const complianceEvaluations = completedResults.filter(r => r.compliance_score !== undefined).length;
-  
-  const avgConfidence = completedResults.length > 0
-    ? completedResults.reduce((sum, item) => sum + item.confidence, 0) / completedResults.length
-    : 0;
 
   return (
     <div className="space-y-6">
@@ -147,7 +121,6 @@ const Home: React.FC = () => {
         {/* Decorative Grid Accent */}
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.4] pointer-events-none" />
         
-        {/* Decorative subtle gradient glow */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 dark:bg-primary/20" />
         
         <div className="relative z-10 max-w-3xl space-y-3.5">
@@ -176,13 +149,6 @@ const Home: React.FC = () => {
               <span>Upload Document</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-            <button
-              onClick={handleViewSampleReport}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-card-base hover:bg-orange-50/20 dark:hover:bg-white/5 text-text-main border border-border-base font-semibold text-xs rounded-lg shadow-sm transition-all hover:-translate-y-0.5 cursor-pointer"
-            >
-              <span>View Sample Report</span>
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-            </button>
           </div>
         </div>
       </section>
@@ -194,7 +160,7 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Documents Processed</span>
             <div className="text-xl font-bold text-text-main font-display flex items-baseline gap-1">
-              {processedDocs}
+              {stats.documents_processed}
               <span className="text-xs font-normal text-text-muted">total</span>
             </div>
           </div>
@@ -208,7 +174,7 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Compliance Evaluations</span>
             <div className="text-xl font-bold text-text-main font-display">
-              {complianceEvaluations}
+              {stats.compliance_evaluations}
             </div>
           </div>
           <div className="p-2.5 rounded-lg bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
@@ -219,9 +185,9 @@ const Home: React.FC = () => {
         {/* KPI 3: Reports Generated */}
         <div className="bg-card-base p-4 rounded-xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-200">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Reports Generated</span>
+            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Reports Saved</span>
             <div className="text-xl font-bold text-text-main font-display">
-              {processedDocs}
+              {stats.reports_generated}
             </div>
           </div>
           <div className="p-2.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -234,7 +200,7 @@ const Home: React.FC = () => {
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Classification Accuracy</span>
             <div className="text-xl font-bold text-text-main font-display flex items-center gap-1.5">
-              {avgConfidence > 0 ? (avgConfidence * 100).toFixed(1) + '%' : '98.8%'}
+              {stats.classification_accuracy > 0 ? (stats.classification_accuracy * 100).toFixed(1) + '%' : '0.0%'}
               <span className="inline-flex items-center text-[9px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 rounded">
                 <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                 Target
@@ -427,7 +393,7 @@ const Home: React.FC = () => {
                 </div>
                 <h3 className="text-xs font-bold text-text-main">No Evaluations Performed</h3>
                 <p className="text-[11px] text-text-muted max-w-xs mt-1 leading-relaxed font-sans">
-                  Upload green building documents or click <span onClick={handleViewSampleReport} className="text-primary font-bold cursor-pointer hover:underline">View Sample Report</span> to demonstrate taxonomy classification and key metrics extraction.
+                  Upload green building documents to classify standard taxonomy and extract key metrics.
                 </p>
               </motion.div>
             ) : (

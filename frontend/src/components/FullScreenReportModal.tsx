@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, FileText, CheckCircle2, ShieldCheck, 
-  Sparkles, ClipboardCheck 
+  Sparkles, ClipboardCheck, Bookmark 
 } from 'lucide-react';
 import type { ClassificationResult } from '../types/document';
+import api from '../services/api';
 
 interface FullScreenReportModalProps {
   isOpen: boolean;
@@ -65,11 +66,14 @@ const formatFieldName = (field: string): string => {
 const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, onClose, report }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const modalRef = useRef<HTMLDivElement>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const isLoggedIn = !!localStorage.getItem('greenintel_token');
 
   // Prevent scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setIsBookmarked(false);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -86,13 +90,35 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
     }
   };
 
+  const handleBookmark = async () => {
+    if (!isLoggedIn) {
+      alert("Authentication is required to save reports. Please log in or create an account.");
+      return;
+    }
+
+    try {
+      await api.post('/api/reports', {
+        title: report.document_type + " Evaluation (" + report.filename + ")",
+        filename: report.filename,
+        score: report.compliance_score || 0,
+        metrics: `${Object.keys(report.extracted_data || {}).length} parameters extracted`,
+        evaluation_id: null
+      });
+      setIsBookmarked(true);
+      alert("Report saved to your bookmarks successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.detail || "Failed to bookmark report.");
+    }
+  };
+
   const percentage = (report.confidence * 100).toFixed(1);
   const theme = getTheme(report.document_type);
   const IconComponent = theme.icon;
 
   // Fallbacks for missing backend properties to make the UI look enterprise-ready
   const overview = report.generated_report || 
-    `This ${report.document_type} (file: ${report.filename}) was successfully parsed. The system classified this document with ${percentage}% confidence and extracted ${Object.keys(report.extracted_data).length} structured green building attributes matching the IGBC taxonomy standards.`;
+    `This ${report.document_type} (file: ${report.filename}) was successfully parsed. The system classified this document with ${percentage}% confidence and extracted ${Object.keys(report.extracted_data || {}).length} structured green building attributes matching the IGBC taxonomy standards.`;
 
   const compliance = report.overall_status 
     ? `The document has been audited against standard rating criteria and rated overall as "${report.overall_status}".`
@@ -161,6 +187,19 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                     Score: {report.compliance_score} ({report.overall_status})
                   </span>
                 )}
+
+                <button
+                  onClick={handleBookmark}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
+                    isBookmarked 
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                      : 'bg-card-base border-border-base text-text-muted hover:text-text-main hover:bg-orange-500/10'
+                  }`}
+                  title="Bookmark Report"
+                >
+                  <Bookmark className="w-3.5 h-3.5" />
+                  <span>{isBookmarked ? 'Saved' : 'Save Report'}</span>
+                </button>
 
                 <button
                   onClick={onClose}

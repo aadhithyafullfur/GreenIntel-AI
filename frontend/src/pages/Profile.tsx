@@ -1,14 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User as UserIcon, Mail, Calendar, ShieldCheck, LogOut, Settings, Key } from 'lucide-react';
+import api from '../services/api';
+
+interface DashboardStats {
+  documents_processed: number;
+  compliance_evaluations: number;
+  reports_generated: number;
+  classification_accuracy: number;
+  top_score: number;
+}
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({
+    documents_processed: 0,
+    compliance_evaluations: 0,
+    reports_generated: 0,
+    classification_accuracy: 0.0,
+    top_score: 0
+  });
+
+  useEffect(() => {
+    const fetchProfileStats = async () => {
+      try {
+        const response = await api.get('/api/evaluations/stats');
+        setStats(response.data);
+      } catch (err) {
+        console.error("Failed to load profile evaluation stats:", err);
+      }
+    };
+    if (user) {
+      fetchProfileStats();
+    }
+  }, [user]);
 
   if (!user) {
     return (
       <div className="text-center p-8">
-        <p className="text-text-muted">Loading user profile...</p>
+        <p className="text-text-muted font-sans font-semibold">Loading user profile...</p>
       </div>
     );
   }
@@ -40,7 +70,7 @@ const Profile: React.FC = () => {
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-orange-500" />
             
             <img 
-              src={user.avatarUrl} 
+              src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'} 
               alt={user.name} 
               className="w-20 h-20 rounded-full border-2 border-primary/40 shadow-md object-cover mt-2"
             />
@@ -116,15 +146,15 @@ const Profile: React.FC = () => {
               <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">Evaluation Stats</h3>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="bg-card-base p-3 rounded-lg border border-border-base/50">
-                  <div className="text-base font-bold text-text-main font-display">12</div>
+                  <div className="text-base font-bold text-text-main font-display">{stats.documents_processed}</div>
                   <div className="text-[9px] text-text-muted font-sans font-semibold uppercase">Total Audits</div>
                 </div>
                 <div className="bg-card-base p-3 rounded-lg border border-border-base/50">
-                  <div className="text-base font-bold text-text-main font-display">94%</div>
+                  <div className="text-base font-bold text-text-main font-display">{stats.top_score > 0 ? stats.top_score + '%' : '0%'}</div>
                   <div className="text-[9px] text-text-muted font-sans font-semibold uppercase">Top Score</div>
                 </div>
                 <div className="bg-card-base p-3 rounded-lg border border-border-base/50">
-                  <div className="text-base font-bold text-text-main font-display">98.8%</div>
+                  <div className="text-base font-bold text-text-main font-display">{stats.classification_accuracy > 0 ? (stats.classification_accuracy * 100).toFixed(1) + '%' : '0%'}</div>
                   <div className="text-[9px] text-text-muted font-sans font-semibold uppercase">Confidence</div>
                 </div>
               </div>
@@ -139,7 +169,7 @@ const Profile: React.FC = () => {
                   <span className="font-mono">greenintel_api_key_••••••••••••••••</span>
                 </div>
                 <button 
-                  onClick={() => alert("Simulating copying API Key...")}
+                  onClick={() => alert("Reveal API keys feature is under developer configuration.")}
                   className="px-2.5 py-1 border border-border-base hover:border-primary/50 text-[10px] font-bold text-text-main rounded-md cursor-pointer transition-colors"
                 >
                   Reveal
