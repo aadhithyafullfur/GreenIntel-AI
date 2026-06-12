@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from bson import ObjectId
+from typing import Optional
 from fastapi import HTTPException, status
 try:
     from backend.database.mongodb import get_database, check_connection, DatabaseOfflineException
@@ -92,3 +93,27 @@ async def authenticate_user(email: str, password_plain: str):
     
     logger.warning(f"Authentication failed: Incorrect password for user '{email}'.")
     return None
+
+async def create_google_user(name: str, email: str, profile_picture: Optional[str] = None):
+    """
+    Registers a new user authenticated via Google OAuth and inserts their document into MongoDB Atlas.
+    """
+    verify_db_connected()
+    
+    email_lower = email.lower()
+    created_at_time = datetime.utcnow()
+
+    user_doc = {
+        "name": name,
+        "email": email_lower,
+        "profile_picture": profile_picture,
+        "auth_provider": "google",
+        "created_at": created_at_time.isoformat()
+    }
+
+    db = get_database()
+    logger.info(f"Inserting new Google user '{email_lower}' into MongoDB Atlas 'users' collection.")
+    result = await db.users.insert_one(user_doc)
+    user_doc["_id"] = str(result.inserted_id)
+    return user_doc
+

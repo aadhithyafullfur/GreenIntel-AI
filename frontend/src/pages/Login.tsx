@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ShieldCheck, Mail, Lock, ArrowRight, 
+import {
+  ShieldCheck, Mail, Lock, ArrowRight,
   Sparkles, CheckCircle2, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const Login: React.FC = () => {
-  const { login, loginWithGoogle, isAuthenticated, error, clearError } = useAuth();
+  const { login, isAuthenticated, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const from = (location.state as any)?.from?.pathname || "/";
@@ -53,15 +53,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleSubmitting(true);
-    clearError();
-    try {
-      await loginWithGoogle();
-    } catch (err) {
-      setGoogleSubmitting(false);
-    }
-  };
+
 
   const features = [
     {
@@ -92,10 +84,10 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-[85vh] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-6">
-      
+
       {/* LEFT SIDE: Premium Product Branding (6 Columns) */}
       <div className="lg:col-span-7 space-y-8 flex flex-col justify-center h-full pr-0 lg:pr-8 relative overflow-hidden">
-        
+
         {/* Subtle Decorative Floating Orbs */}
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2 dark:bg-primary/15 animate-pulse" />
         <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-orange-600/5 rounded-full blur-3xl pointer-events-none dark:bg-orange-500/10" />
@@ -109,7 +101,7 @@ const Login: React.FC = () => {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-main tracking-tight font-display leading-[1.15]">
             Accelerate your green building <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-600 dark:from-primary dark:to-orange-400">compliance audit</span>
           </h1>
-          
+
           <p className="text-sm text-text-muted max-w-xl font-normal leading-relaxed font-sans">
             GreenIntel AI acts as your digital sustainability officer, automatically assessing compliance documentation against Indian Green Building Council (IGBC) rating systems.
           </p>
@@ -155,7 +147,7 @@ const Login: React.FC = () => {
 
       {/* RIGHT SIDE: Premium Login Form Card (5 Columns) */}
       <div className="lg:col-span-5 flex justify-center">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
@@ -184,7 +176,7 @@ const Login: React.FC = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            
+
             {/* Email Input */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-[10.5px] font-bold text-text-muted uppercase tracking-wider block font-sans">
@@ -201,7 +193,7 @@ const Login: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   className="w-full pl-9 pr-4 py-2.5 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -232,7 +224,7 @@ const Login: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-9 pr-10 py-2.5 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
                 <button
@@ -249,7 +241,7 @@ const Login: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting || googleSubmitting}
+              disabled={isSubmitting}
               className="w-full mt-2 py-2.5 px-4 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/15 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -279,24 +271,11 @@ const Login: React.FC = () => {
           </div>
 
           {/* Social Sign-In with Google */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={isSubmitting || googleSubmitting}
-            className="w-full py-2.5 px-4 bg-card-base hover:bg-orange-50/25 dark:hover:bg-white/5 border border-border-base text-text-main text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-2.5 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {googleSubmitting ? (
-              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            ) : (
-              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.137 4.114-3.468 0-6.28-2.812-6.28-6.28s2.812-6.28 6.28-6.28c1.637 0 3.127.625 4.254 1.638l3.155-3.156C19.23 2.127 15.93 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c6.76 0 12.24-5.48 12.24-12.24 0-.853-.082-1.677-.232-2.47L12.24 10.285z"
-                />
-              </svg>
-            )}
-            <span>Continue with Google</span>
-          </button>
+          <div className="w-full flex justify-center mt-1">
+            <GoogleSignInButton
+              onSuccess={() => navigate(from, { replace: true })}
+            />
+          </div>
 
           {/* Card Footer: Sign up redirect */}
           <div className="mt-6 text-center">
@@ -310,7 +289,7 @@ const Login: React.FC = () => {
               </Link>
             </p>
           </div>
-          
+
           {/* Quick Login tip */}
           <div className="mt-4 p-2 rounded bg-primary/5 border border-primary/15 text-[10px] text-primary/80 text-center font-sans">
             <span className="font-bold">Demo account:</span> demo@greenintel.ai / password123

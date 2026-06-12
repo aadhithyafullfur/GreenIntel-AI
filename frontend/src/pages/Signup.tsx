@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ShieldCheck, Mail, Lock, User as UserIcon, 
+import {
+  ShieldCheck, Mail, Lock, User as UserIcon,
   ArrowRight, Sparkles, PlusCircle, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const Signup: React.FC = () => {
-  const { signup, loginWithGoogle, isAuthenticated, error, clearError } = useAuth();
+  const { signup, isAuthenticated, error, clearError } = useAuth();
   const navigate = useNavigate();
-  
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,15 +57,7 @@ const Signup: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setGoogleSubmitting(true);
-    clearError();
-    try {
-      await loginWithGoogle();
-    } catch (err) {
-      setGoogleSubmitting(false);
-    }
-  };
+
 
   const accountBenefits = [
     {
@@ -88,10 +80,10 @@ const Signup: React.FC = () => {
 
   return (
     <div className="min-h-[85vh] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-6">
-      
+
       {/* LEFT SIDE: Account Benefits (6 Columns) */}
       <div className="lg:col-span-7 space-y-8 flex flex-col justify-center h-full pr-0 lg:pr-8 relative overflow-hidden">
-        
+
         {/* Subtle Decorative Floating Orbs */}
         <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2 dark:bg-primary/15 animate-pulse" />
         <div className="absolute bottom-1/4 right-0 w-72 h-72 bg-orange-600/5 rounded-full blur-3xl pointer-events-none dark:bg-orange-500/10" />
@@ -105,7 +97,7 @@ const Signup: React.FC = () => {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-text-main tracking-tight font-display leading-[1.15]">
             Build sustainable structures, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-600 dark:from-primary dark:to-orange-400">log results securely</span>
           </h1>
-          
+
           <p className="text-sm text-text-muted max-w-xl font-normal leading-relaxed font-sans">
             Create an account to track your environmental footprints, build structural profiles, and evaluate compliance across multiple IGBC standards.
           </p>
@@ -149,7 +141,7 @@ const Signup: React.FC = () => {
 
       {/* RIGHT SIDE: Signup Form Card (5 Columns) */}
       <div className="lg:col-span-5 flex justify-center">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
@@ -178,7 +170,7 @@ const Signup: React.FC = () => {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5">
-            
+
             {/* Full Name Input */}
             <div className="space-y-1">
               <label htmlFor="fullName" className="text-[10.5px] font-bold text-text-muted uppercase tracking-wider block font-sans">
@@ -195,7 +187,7 @@ const Signup: React.FC = () => {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Aadhithya Srinivasan"
                   className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -217,7 +209,7 @@ const Signup: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -239,7 +231,7 @@ const Signup: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-9 pr-10 py-2 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
                 <button
@@ -269,7 +261,7 @@ const Signup: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full pl-9 pr-10 py-2 bg-white/50 dark:bg-white/5 border border-border-base rounded-lg text-sm text-text-main placeholder:text-text-muted/65 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 font-sans"
-                  disabled={isSubmitting || googleSubmitting}
+                  disabled={isSubmitting}
                   required
                 />
               </div>
@@ -278,7 +270,7 @@ const Signup: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting || googleSubmitting}
+              disabled={isSubmitting}
               className="w-full mt-3 py-2.5 px-4 bg-primary hover:bg-primary-hover text-white text-xs font-bold rounded-lg shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/15 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
@@ -308,24 +300,11 @@ const Signup: React.FC = () => {
           </div>
 
           {/* Social Sign-In with Google */}
-          <button
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={isSubmitting || googleSubmitting}
-            className="w-full py-2.5 px-4 bg-card-base hover:bg-orange-50/25 dark:hover:bg-white/5 border border-border-base text-text-main text-xs font-bold rounded-lg shadow-sm flex items-center justify-center gap-2.5 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {googleSubmitting ? (
-              <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            ) : (
-              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.137 4.114-3.468 0-6.28-2.812-6.28-6.28s2.812-6.28 6.28-6.28c1.637 0 3.127.625 4.254 1.638l3.155-3.156C19.23 2.127 15.93 0 12.24 0 5.48 0 0 5.48 0 12.24s5.48 12.24 12.24 12.24c6.76 0 12.24-5.48 12.24-12.24 0-.853-.082-1.677-.232-2.47L12.24 10.285z"
-                />
-              </svg>
-            )}
-            <span>Continue with Google</span>
-          </button>
+          <div className="w-full flex justify-center mt-1">
+            <GoogleSignInButton
+              onSuccess={() => navigate("/", { replace: true })}
+            />
+          </div>
 
           {/* Card Footer: Redirect back to Login */}
           <div className="mt-5 text-center">

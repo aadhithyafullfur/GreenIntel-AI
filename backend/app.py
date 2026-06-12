@@ -23,12 +23,15 @@ try:
     from backend.database.mongodb import connect_to_mongo, close_mongo_connection, check_connection, DatabaseOfflineException
     from backend.routes.auth_routes import router as auth_router
     from backend.routes.evaluation_routes import router as evaluation_router
+    from backend.routes.google_auth_routes import router as google_auth_router
 except ImportError:
     from routes.document_routes import router as document_router
     from utils.classifier import initialize_model_if_missing
     from database.mongodb import connect_to_mongo, close_mongo_connection, check_connection, DatabaseOfflineException
     from routes.auth_routes import router as auth_router
     from routes.evaluation_routes import router as evaluation_router
+    from routes.google_auth_routes import router as google_auth_router
+
 
 from fastapi.responses import JSONResponse
 
@@ -68,6 +71,8 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 app.include_router(document_router, tags=["document-evaluation"])
 app.include_router(auth_router)
 app.include_router(evaluation_router)
+app.include_router(google_auth_router)
+
 
 @app.on_event("startup")
 async def startup_event():

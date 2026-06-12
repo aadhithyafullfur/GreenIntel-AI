@@ -16,7 +16,7 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const response = await api.get('/api/auth/me');
         const userData = response.data;
-        
+
         // Generate an initials avatar if none exists
         const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
         const avatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Save token & user
       localStorage.setItem('greenintel_token', access_token);
-      
+
       const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
       const avatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
 
@@ -139,11 +139,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Google OAuth is disabled as it requires mock session fallback
-  const loginWithGoogle = async (): Promise<void> => {
-    const errMsg = "Google Sign In is currently disabled. Please sign in with your email.";
-    setError(errMsg);
-    throw new Error(errMsg);
+  // Google OAuth verification
+  const loginWithGoogle = async (credential: string): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    console.log("Sending Google ID token to backend /api/auth/google...");
+    try {
+      const response = await api.post('/api/auth/google', { token: credential });
+      console.log("Backend response for Google Login received:", response.data);
+      const { access_token, user: userData } = response.data;
+
+      // Save token
+      localStorage.setItem('greenintel_token', access_token);
+
+      // Generate a fallback avatar if Google picture is not present
+      const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
+      const fallbackAvatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
+
+      const sessionUser: User = {
+        id: userData.id || userData._id,
+        name: userData.name,
+        email: userData.email,
+        createdAt: userData.created_at || userData.createdAt || new Date().toISOString(),
+        avatarUrl: userData.picture || userData.profile_picture || userData.avatarUrl || fallbackAvatarUrl
+      };
+
+      setUser(sessionUser);
+      localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
+    } catch (err: any) {
+      const errMsg = err.response?.data?.detail || err.message || 'Google Sign-In failed.';
+      setError(errMsg);
+      setIsLoading(false);
+      throw new Error(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Logout
