@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, Bell, Globe, Menu, X, Check
 } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
-import ProfileDropdown from './ProfileDropdown';
+import ThemeToggle from './ThemeToggle.tsx';
+import ProfileDropdown from './ProfileDropdown.tsx';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar: React.FC = () => {

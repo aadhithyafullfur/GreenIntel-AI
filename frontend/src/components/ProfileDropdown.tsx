@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Settings, ChevronDown, LayoutDashboard, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const ProfileDropdown: React.FC = () => {
+export const ProfileDropdown: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
