@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FileText, Trash2, AlertCircle, 
-  HelpCircle, Zap, Droplets, Trash, ClipboardCheck, 
+import {
+  FileText, Trash2, AlertCircle,
+  HelpCircle, Zap, Droplets, Trash, ClipboardCheck,
   ShieldCheck, ArrowRight, Brain, Activity,
   TrendingUp, Sparkles
 } from 'lucide-react';
@@ -29,7 +29,7 @@ const Home: React.FC = () => {
     reports_generated: 0,
     classification_accuracy: 0.0
   });
-  
+
   const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   const fetchStats = async () => {
@@ -120,27 +120,27 @@ const Home: React.FC = () => {
       <section className="relative overflow-hidden bg-card-base border border-border-base rounded-xl p-6 md:p-8 shadow-sm orange-glow transition-all duration-350">
         {/* Decorative Grid Accent */}
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.4] pointer-events-none" />
-        
+
         <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 dark:bg-primary/20" />
-        
+
         <div className="relative z-10 max-w-3xl space-y-3.5">
           <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
             <Brain className="w-3.5 h-3.5" />
             <span>Document Intelligence Platform</span>
           </div>
-          
+
           <h1 className="text-2xl md:text-3xl font-extrabold text-text-main tracking-tight font-display">
             GreenIntel AI
           </h1>
-          
+
           <p className="text-xs md:text-sm text-text-muted font-semibold font-sans">
             AI-Powered IGBC Document Evaluation and Compliance Intelligence Platform
           </p>
-          
+
           <p className="text-xs text-text-muted leading-relaxed max-w-2xl font-normal font-sans">
             Upload sustainability documents and receive automated classification, compliance assessment, and professional evaluation reports mapped against the Indian Green Building Council (IGBC) taxonomy.
           </p>
-          
+
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={scrollToUpload}
@@ -224,7 +224,7 @@ const Home: React.FC = () => {
                 <h2 className="text-xs font-bold text-text-main uppercase tracking-wider">Evaluate Documents</h2>
                 <p className="text-[11px] text-text-muted font-sans">Submit environmental audits or reports.</p>
               </div>
-              
+
               {documents.length > 0 && (
                 <button
                   onClick={handleClearAll}
@@ -268,7 +268,7 @@ const Home: React.FC = () => {
                     <span>Processing Queue ({activeUploads.length})</span>
                   </h3>
                 </div>
-                
+
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
                   {activeUploads.map((doc) => (
                     <div key={doc.id} className="flex items-center justify-between p-2 rounded-lg bg-card-base/50 border border-border-base gap-3 text-xs">
@@ -382,7 +382,7 @@ const Home: React.FC = () => {
 
           <AnimatePresence mode="popLayout">
             {completedResults.length === 0 ? (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -397,7 +397,7 @@ const Home: React.FC = () => {
                 </p>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"

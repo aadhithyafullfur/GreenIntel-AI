@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  FileText, Zap, Droplets, Trash2, ShieldCheck, ClipboardCheck, 
+import {
+  FileText, Zap, Droplets, Trash2, ShieldCheck, ClipboardCheck,
   Sparkles, CheckCircle2, FileIcon, Eye
 } from 'lucide-react';
 import type { ClassificationResult } from '../types/document';
@@ -103,7 +103,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
               </h4>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <button
               onClick={() => setIsModalOpen(true)}
@@ -126,13 +126,13 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
               <IconComponent className="w-3 h-3" />
               {document_type}
             </span>
-            
+
             <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
               <Sparkles className="w-2.5 h-2.5" />
               Extracted
             </span>
           </div>
-          
+
           <p className="text-[11px] text-text-muted leading-normal min-h-[32px] line-clamp-2">
             {theme.desc}
           </p>
@@ -145,17 +145,16 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
               <Sparkles className="w-3 h-3 text-primary" />
               <span>Extracted Metrics</span>
             </h5>
-            
+
             <div className="grid grid-cols-2 gap-1.5 max-h-[160px] overflow-y-auto pr-1 bg-card-base/50 rounded-lg p-2 border border-border-base custom-scrollbar">
               {Object.entries(extracted_data).map(([key, value]) => {
                 const strVal = value ? String(value) : '';
                 const isLong = key === 'findings' || key === 'recommendations' || strVal.length > 20;
                 return (
-                  <div 
-                    key={key} 
-                    className={`bg-card-base border border-border-base/50 hover:border-primary/30 rounded-md p-1.5 transition-all duration-150 ${
-                      isLong ? 'col-span-2' : 'col-span-1'
-                    }`}
+                  <div
+                    key={key}
+                    className={`bg-card-base border border-border-base/50 hover:border-primary/30 rounded-md p-1.5 transition-all duration-150 ${isLong ? 'col-span-2' : 'col-span-1'
+                      }`}
                   >
                     <span className="block text-[8px] font-bold text-text-muted uppercase tracking-wider truncate" title={formatFieldName(key)}>
                       {formatFieldName(key)}
@@ -180,13 +179,12 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
           </h5>
           <div className="flex items-center justify-between gap-2 bg-card-base/60 p-2 rounded-lg border border-border-base">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-bold border leading-none ${
-                result.overall_status === 'Excellent' || result.overall_status === 'Compliant'
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                  : result.overall_status === 'Partially Compliant'
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-bold border leading-none ${result.overall_status === 'Excellent' || result.overall_status === 'Compliant'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                : result.overall_status === 'Partially Compliant'
                   ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                   : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-              }`}>
+                }`}>
                 {result.overall_status}
               </span>
               <span className="text-[10px] font-extrabold text-text-main font-mono">

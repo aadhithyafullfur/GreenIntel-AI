@@ -62,11 +62,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected, isLoading }) =
       onDragLeave={handleDrag}
       onDrop={handleDrop}
       onClick={onButtonClick}
-      className={`relative w-full rounded-xl border border-dashed transition-all duration-300 py-10 px-4 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-card-base/40 dark:bg-white/3 hover:bg-orange-50/20 dark:hover:bg-white/5 hover:shadow-md ${
-        isDragActive
-          ? 'border-primary bg-primary/5 shadow-inner'
-          : 'border-border-base hover:border-primary/50 shadow-sm'
-      } ${isLoading ? 'pointer-events-none opacity-60' : ''}`}
+      className={`relative w-full rounded-xl border border-dashed transition-all duration-300 py-10 px-4 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-card-base/40 dark:bg-white/3 hover:bg-orange-50/20 dark:hover:bg-white/5 hover:shadow-md ${isDragActive
+        ? 'border-primary bg-primary/5 shadow-inner'
+        : 'border-border-base hover:border-primary/50 shadow-sm'
+        } ${isLoading ? 'pointer-events-none opacity-60' : ''}`}
     >
       {/* Hidden File Input */}
       <input
@@ -79,18 +78,16 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelected, isLoading }) =
       />
 
       {/* Decorative Glow */}
-      <div 
-        className={`absolute -inset-10 bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl transition-opacity duration-300 pointer-events-none ${
-          isDragActive ? 'opacity-100' : 'opacity-0'
-        }`}
+      <div
+        className={`absolute -inset-10 bg-gradient-to-tr from-primary/10 to-transparent rounded-full blur-3xl transition-opacity duration-300 pointer-events-none ${isDragActive ? 'opacity-100' : 'opacity-0'
+          }`}
       />
 
       {/* PDF Upload Icon */}
-      <div className={`p-3.5 rounded-full border mb-4 transition-all duration-300 ${
-        isDragActive
-          ? 'bg-primary/20 border-primary/30 text-primary scale-110 shadow'
-          : 'bg-card-base border-border-base text-text-muted shadow-sm'
-      }`}>
+      <div className={`p-3.5 rounded-full border mb-4 transition-all duration-300 ${isDragActive
+        ? 'bg-primary/20 border-primary/30 text-primary scale-110 shadow'
+        : 'bg-card-base border-border-base text-text-muted shadow-sm'
+        }`}>
         <FileText className="w-6 h-6 text-red-500 dark:text-red-400" strokeWidth={1.5} />
       </div>
 

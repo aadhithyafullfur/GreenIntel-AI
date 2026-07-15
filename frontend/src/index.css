@@ -3,7 +3,7 @@
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
-  
+
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
@@ -46,11 +46,11 @@
 @layer utilities {
   .bg-grid-pattern {
     background-size: 32px 32px;
-    background-image: 
+    background-image:
       linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
       linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
   }
-  
+
   .orange-glow {
     box-shadow: 0 0 50px -12px var(--glow-color);
   }
@@ -60,19 +60,29 @@
 body {
   background-color: var(--bg-base);
   color: var(--text-main);
-  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-              color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-div, header, footer, section, button, a {
-  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+div,
+header,
+footer,
+section,
+button,
+a {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Base transitions */
-button, a, input, select, textarea, [role="button"] {
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

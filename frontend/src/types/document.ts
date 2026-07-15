@@ -26,7 +26,7 @@ export interface ReportData {
   partial_checks?: number;
 }
 
-export interface ClassificationResult extends ReportData {}
+export interface ClassificationResult extends ReportData { }
 
 export interface UploadedDocument {
   id: string;

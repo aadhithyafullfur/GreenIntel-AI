@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, FileText, CheckCircle2, ShieldCheck, 
-  Sparkles, ClipboardCheck, Bookmark 
+import {
+  X, FileText, CheckCircle2, ShieldCheck,
+  Sparkles, ClipboardCheck, Bookmark
 } from 'lucide-react';
 import type { ClassificationResult } from '../types/document';
 import api from '../services/api';
@@ -117,20 +117,20 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
   const IconComponent = theme.icon;
 
   // Fallbacks for missing backend properties to make the UI look enterprise-ready
-  const overview = report.generated_report || 
+  const overview = report.generated_report ||
     `This ${report.document_type} (file: ${report.filename}) was successfully parsed. The system classified this document with ${percentage}% confidence and extracted ${Object.keys(report.extracted_data || {}).length} structured green building attributes matching the IGBC taxonomy standards.`;
 
-  const compliance = report.overall_status 
+  const compliance = report.overall_status
     ? `The document has been audited against standard rating criteria and rated overall as "${report.overall_status}".`
     : "Compliance details have not been evaluated for this document type.";
 
   const recs = report.recommendations && report.recommendations.length > 0
     ? report.recommendations
     : [
-        "Ensure all compliance certificates carry standard seal registrations.",
-        "Include mechanical HVAC datasheets to support energy efficiency credits.",
-        "Establish regular waste audits to verify segregation targets."
-      ];
+      "Ensure all compliance certificates carry standard seal registrations.",
+      "Include mechanical HVAC datasheets to support energy efficiency credits.",
+      "Establish regular waste audits to verify segregation targets."
+    ];
 
   return (
     <AnimatePresence>
@@ -177,24 +177,22 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                 </span>
 
                 {report.compliance_score !== undefined && (
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${
-                    report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                      : report.overall_status === 'Partially Compliant'
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                    : report.overall_status === 'Partially Compliant'
                       ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                       : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                  }`}>
+                    }`}>
                     Score: {report.compliance_score} ({report.overall_status})
                   </span>
                 )}
 
                 <button
                   onClick={handleBookmark}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
-                    isBookmarked 
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                      : 'bg-card-base border-border-base text-text-muted hover:text-text-main hover:bg-orange-500/10'
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${isBookmarked
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                    : 'bg-card-base border-border-base text-text-muted hover:text-text-main hover:bg-orange-500/10'
+                    }`}
                   title="Bookmark Report"
                 >
                   <Bookmark className="w-3.5 h-3.5" />
@@ -216,11 +214,10 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                    activeTab === tab
-                      ? 'bg-card-base border-border-base text-text-main shadow-sm'
-                      : 'bg-transparent border-transparent text-text-muted hover:text-text-main hover:bg-orange-500/10'
-                  }`}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${activeTab === tab
+                    ? 'bg-card-base border-border-base text-text-main shadow-sm'
+                    : 'bg-transparent border-transparent text-text-muted hover:text-text-main hover:bg-orange-500/10'
+                    }`}
                 >
                   {tab === 'overview' && 'Overview'}
                   {tab === 'data' && 'Extracted Data'}
@@ -232,7 +229,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
 
             {/* Scrollable Content Body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/10 dark:bg-transparent">
-              
+
               {/* Overview Tab */}
               {activeTab === 'overview' && (
                 <motion.div
@@ -290,9 +287,8 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                         return (
                           <div
                             key={key}
-                            className={`bg-card-base border border-border-base/70 hover:border-primary/45 rounded-xl p-4 transition-all shadow-sm ${
-                              isLong ? 'sm:col-span-2 lg:col-span-3' : ''
-                            }`}
+                            className={`bg-card-base border border-border-base/70 hover:border-primary/45 rounded-xl p-4 transition-all shadow-sm ${isLong ? 'sm:col-span-2 lg:col-span-3' : ''
+                              }`}
                           >
                             <span className="block text-[9px] font-bold text-text-muted uppercase tracking-wider font-sans">
                               {formatFieldName(key)}
@@ -343,8 +339,8 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                                   report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
                                     ? '#10B981' // Green
                                     : report.overall_status === 'Partially Compliant'
-                                    ? '#F59E0B' // Yellow
-                                    : '#EF4444' // Red
+                                      ? '#F59E0B' // Yellow
+                                      : '#EF4444' // Red
                                 }
                                 strokeWidth="6"
                                 fill="transparent"
@@ -365,13 +361,12 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                           <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
                           <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Overall Status</span>
                           <div className="my-4">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold border ${
-                              report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                : report.overall_status === 'Partially Compliant'
+                            <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold border ${report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                              : report.overall_status === 'Partially Compliant'
                                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                                 : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                            }`}>
+                              }`}>
                               <ShieldCheck className="w-3.5 h-3.5" />
                               {report.overall_status ?? 'Unknown'}
                             </span>
@@ -426,7 +421,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                             Rule Engine v1.0
                           </span>
                         </div>
-                        
+
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
@@ -447,13 +442,12 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                                     {check.value || '—'}
                                   </td>
                                   <td className="px-5 py-3 text-center whitespace-nowrap">
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-bold border ${
-                                      check.status === 'Excellent' || check.status === 'Compliant'
-                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                        : check.status === 'Partially Compliant'
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-bold border ${check.status === 'Excellent' || check.status === 'Compliant'
+                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                      : check.status === 'Partially Compliant'
                                         ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                                         : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                                    }`}>
+                                      }`}>
                                       {check.status}
                                     </span>
                                   </td>

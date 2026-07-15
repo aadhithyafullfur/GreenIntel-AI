@@ -18,7 +18,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
   const handleSuccess = async (credentialResponse: any) => {
     console.log("Google Sign-In response received:", credentialResponse);
     console.log("Google ID Token (credential):", credentialResponse.credential);
-    
+
     if (!credentialResponse.credential) {
       const errMsg = "No credentials received from Google.";
       setLocalError(errMsg);
@@ -54,14 +54,14 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
           <span className="truncate">{localError}</span>
         </div>
       )}
-      
+
       <div className="w-full relative overflow-hidden rounded-lg transition-all duration-300">
         {isLoading && (
           <div className="absolute inset-0 bg-white/70 dark:bg-black/70 flex items-center justify-center z-10 rounded-lg">
             <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
           </div>
         )}
-        
+
         {/* Container that implements responsive design and glassmorphism properties */}
         <div className="w-full flex justify-center py-0.5">
           <GoogleLogin
