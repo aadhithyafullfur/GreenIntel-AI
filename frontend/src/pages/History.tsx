@@ -40,7 +40,7 @@ const History: React.FC = () => {
   const handleClearLogs = async () => {
     const confirmClear = window.confirm("Are you sure you want to clear all evaluation logs? This action is permanent and cannot be undone.");
     if (!confirmClear) return;
-    
+
     try {
       await api.post('/api/evaluations/clear-logs');
       alert("Logs cleared successfully.");
@@ -74,8 +74,8 @@ const History: React.FC = () => {
             Review and download all your past sustainability document evaluations.
           </p>
         </div>
-        
-        <Link 
+
+        <Link
           to="/"
           className="inline-flex items-center gap-2 px-3.5 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-all"
         >
@@ -88,7 +88,7 @@ const History: React.FC = () => {
         <div className="p-4 border-b border-border-base bg-card-base flex items-center justify-between">
           <span className="text-xs font-bold text-text-main uppercase tracking-wider">Historical Logs</span>
           {historyData.length > 0 && (
-            <button 
+            <button
               onClick={handleClearLogs}
               className="text-[10px] font-bold text-red-500 hover:text-white hover:bg-red-500 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded cursor-pointer transition-colors"
             >
@@ -132,7 +132,7 @@ const History: React.FC = () => {
                       {item.type}
                     </span>
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-4 text-[10.5px] text-text-muted font-sans">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5 text-text-muted/75" />
@@ -156,14 +156,14 @@ const History: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button 
+                    <button
                       onClick={() => alert("Downloading PDF summary report...")}
                       className="p-2 bg-card-base border border-border-base hover:border-primary/40 hover:bg-primary/5 text-text-main rounded-lg cursor-pointer transition-all"
                       title="Download Report"
                     >
                       <ArrowDownToLine className="w-4 h-4" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDeleteLog(item.id)}
                       className="p-2 bg-card-base border border-border-base hover:border-red-500/40 hover:bg-red-500/5 text-text-muted hover:text-red-500 rounded-lg cursor-pointer transition-all"
                       title="Delete Log"

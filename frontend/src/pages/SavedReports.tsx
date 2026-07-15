@@ -96,7 +96,7 @@ const SavedReports: React.FC = () => {
                     <span className="truncate">{item.filename}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs flex-shrink-0">
                   {item.score}
                 </div>
@@ -109,15 +109,15 @@ const SavedReports: React.FC = () => {
 
               {/* Action row */}
               <div className="flex items-center gap-2 pt-1">
-                <button 
+                <button
                   onClick={() => alert("Downloading PDF summary report...")}
                   className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-hover text-white text-[11px] font-semibold rounded-lg cursor-pointer transition-all"
                 >
                   <ArrowDownToLine className="w-3.5 h-3.5" />
                   <span>Download Report</span>
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => alert("Copying share link to clipboard...")}
                   className="p-1.5 bg-card-base border border-border-base hover:border-primary/40 hover:bg-primary/5 text-text-main rounded-lg cursor-pointer transition-all"
                   title="Share Report"
@@ -125,7 +125,7 @@ const SavedReports: React.FC = () => {
                   <Share2 className="w-4 h-4" />
                 </button>
 
-                <button 
+                <button
                   onClick={() => handleDeleteBookmark(item.id)}
                   className="p-1.5 bg-card-base border border-border-base hover:border-red-500/40 hover:bg-red-500/5 text-text-muted hover:text-red-500 rounded-lg cursor-pointer transition-all"
                   title="Delete Bookmark"

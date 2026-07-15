@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, Bell, Globe, Menu, X, Check
 } from 'lucide-react';
-import ThemeToggle from './ThemeToggle.tsx';
-import ProfileDropdown from './ProfileDropdown.tsx';
+import ProfileDropdown from './ProfileDropdown';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -26,7 +25,7 @@ const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 h-[72px] bg-white/70 dark:bg-black/60 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/10 transition-colors duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        
+
         {/* Left Side: Brand Logo Group */}
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-rose-500 shadow-sm shadow-primary/20 transition-transform group-hover:scale-[1.02]">
@@ -57,9 +56,8 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`relative px-4 py-1.5 text-xs font-bold rounded-lg transition-colors duration-250 ${
-                  isActive ? 'text-text-main' : 'text-text-muted hover:text-text-main'
-                }`}
+                className={`relative px-4 py-1.5 text-xs font-bold rounded-lg transition-colors duration-250 ${isActive ? 'text-text-main' : 'text-text-muted hover:text-text-main'
+                  }`}
               >
                 {isActive && (
                   <motion.span
@@ -76,7 +74,7 @@ const Navbar: React.FC = () => {
 
         {/* Right Side: Toolbar controls */}
         <div className="hidden md:flex items-center gap-3">
-          
+
           {/* Language Switcher */}
           <div className="relative">
             <button
@@ -123,12 +121,6 @@ const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* Theme Toggle icon */}
-          <ThemeToggle />
-
-          {/* Separator line */}
-          <div className="w-[1px] h-6 bg-black/[0.06] dark:bg-white/15 mx-1" />
-
           {/* Authentication State button & ProfileDropdown */}
           {isAuthenticated ? (
             <ProfileDropdown />
@@ -152,7 +144,6 @@ const Navbar: React.FC = () => {
 
         {/* Mobile menu hamburger toggle */}
         <div className="flex md:hidden items-center gap-2">
-          <ThemeToggle />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-text-muted hover:text-text-main bg-neutral-100 dark:bg-white/5 border border-black/[0.06] dark:border-white/10 rounded-xl cursor-pointer"
@@ -180,11 +171,10 @@ const Navbar: React.FC = () => {
                     key={link.path}
                     to={link.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-4 py-2.5 rounded-xl text-xs font-bold border transition-colors ${
-                      isActive
-                        ? 'bg-primary/5 text-primary border-primary/20'
-                        : 'text-text-main border-transparent hover:bg-neutral-100 dark:hover:bg-white/5'
-                    }`}
+                    className={`block px-4 py-2.5 rounded-xl text-xs font-bold border transition-colors ${isActive
+                      ? 'bg-primary/5 text-primary border-primary/20'
+                      : 'text-text-main border-transparent hover:bg-neutral-100 dark:hover:bg-white/5'
+                      }`}
                   >
                     {link.label}
                   </Link>

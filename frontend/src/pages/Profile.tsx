@@ -44,7 +44,7 @@ const Profile: React.FC = () => {
   }
 
   // Format date
-  const joinDate = user.createdAt 
+  const joinDate = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : 'June 11, 2026';
 
@@ -62,19 +62,19 @@ const Profile: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+
         {/* Left Card: Avatar & Primary Actions */}
         <div className="md:col-span-1 space-y-4">
           <div className="bg-card-base/40 border border-border-base rounded-xl p-5 flex flex-col items-center text-center shadow-sm relative overflow-hidden">
             {/* Glowing Accent */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-orange-500" />
-            
-            <img 
-              src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'} 
-              alt={user.name} 
+
+            <img
+              src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'}
+              alt={user.name}
               className="w-20 h-20 rounded-full border-2 border-primary/40 shadow-md object-cover mt-2"
             />
-            
+
             <div className="mt-4 space-y-1 w-full">
               <h2 className="text-sm font-bold text-text-main truncate">{user.name}</h2>
               <span className="inline-block text-[9.5px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-md">
@@ -84,7 +84,7 @@ const Profile: React.FC = () => {
 
             <div className="w-full border-t border-border-base/40 my-4" />
 
-            <button 
+            <button
               onClick={logout}
               className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 text-red-500 rounded-lg text-xs font-bold cursor-pointer transition-all"
             >
@@ -97,11 +97,11 @@ const Profile: React.FC = () => {
         {/* Right Card: User Details & Stats */}
         <div className="md:col-span-2 space-y-4">
           <div className="bg-card-base/40 border border-border-base rounded-xl p-5 shadow-sm space-y-6">
-            
+
             {/* Account Details Section */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">Profile Information</h3>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Full Name */}
                 <div className="space-y-1 p-3 bg-card-base rounded-lg border border-border-base/60">
@@ -168,7 +168,7 @@ const Profile: React.FC = () => {
                   <Key className="w-4 h-4 text-primary flex-shrink-0" />
                   <span className="font-mono">greenintel_api_key_••••••••••••••••</span>
                 </div>
-                <button 
+                <button
                   onClick={() => alert("Reveal API keys feature is under developer configuration.")}
                   className="px-2.5 py-1 border border-border-base hover:border-primary/50 text-[10px] font-bold text-text-main rounded-md cursor-pointer transition-colors"
                 >
