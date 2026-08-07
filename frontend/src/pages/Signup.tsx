@@ -52,7 +52,7 @@ const Signup: React.FC = () => {
     setIsSubmitting(true);
     try {
       await signup(fullName, email, password);
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
     }
   };

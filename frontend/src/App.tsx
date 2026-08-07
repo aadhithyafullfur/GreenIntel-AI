@@ -6,6 +6,8 @@ import Signup from './pages/Signup';
 import History from './pages/History';
 import SavedReports from './pages/SavedReports';
 import Profile from './pages/Profile';
+import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
@@ -13,7 +15,6 @@ import { AuthProvider } from './context/AuthContext';
 const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-bg-base bg-grid-pattern text-text-main flex flex-col font-sans selection:bg-primary/20 selection:text-primary transition-colors duration-350">
-
       {/* Top Sticky Navigation */}
       <Navbar />
 
@@ -25,6 +26,22 @@ const AppContent: React.FC = () => {
           <Route path="/signup" element={<Signup />} />
 
           {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/history"
             element={

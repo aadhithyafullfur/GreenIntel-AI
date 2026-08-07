@@ -19,7 +19,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const from = (location.state as any)?.from?.pathname || "/";
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -48,7 +48,7 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login(email, password);
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
     }
   };

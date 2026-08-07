@@ -7,6 +7,9 @@ export interface User {
   email: string;
   avatarUrl?: string;
   createdAt: string;
+  provider?: string;
+  lastLogin?: string;
+  googleId?: string;
 }
 
 interface AuthContextType {
@@ -30,42 +33,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize auth state by fetching user profile using saved token
   useEffect(() => {
+    let isMounted = true;
     const fetchUser = async () => {
       const token = localStorage.getItem('greenintel_token');
       if (!token) {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
         return;
       }
 
       try {
         const response = await api.get('/api/auth/me');
+        if (!isMounted) return;
         const userData = response.data;
 
         // Generate an initials avatar if none exists
-        const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-        const avatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
+        const initials = encodeURIComponent(
+          userData.name
+            .split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase()
+        );
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
 
-        setUser({
+        const sessionUser: User = {
           id: userData.id || userData._id,
           name: userData.name,
           email: userData.email,
-          createdAt: userData.created_at,
-          avatarUrl: avatarUrl
-        });
-      } catch (err: any) {
-        console.warn("Backend auth validation failed, clearing token...", err);
-        localStorage.removeItem('greenintel_token');
-        localStorage.removeItem('greenintel_user');
-        setUser(null);
+          createdAt: userData.created_at || userData.createdAt,
+          avatarUrl: userData.profile_picture || userData.picture || userData.avatarUrl || fallbackAvatar,
+          provider: userData.provider || userData.auth_provider || 'local',
+          lastLogin: userData.last_login || userData.lastLogin,
+          googleId: userData.google_id || userData.googleId
+        };
+
+        setUser(sessionUser);
+        localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
+      } catch (err: unknown) {
+        if (isMounted) {
+          console.warn("Backend auth validation failed, clearing token...", err);
+          localStorage.removeItem('greenintel_token');
+          localStorage.removeItem('greenintel_user');
+          setUser(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchUser();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const clearError = () => setError(null);
+
+  const extractErrorMessage = (err: unknown, defaultMsg: string): string => {
+    if (err && typeof err === 'object') {
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
+      if (errObj.response?.data?.detail) return errObj.response.data.detail;
+      if (errObj.message) return errObj.message;
+    }
+    return defaultMsg;
+  };
 
   // Login
   const login = async (email: string, password: string): Promise<void> => {
@@ -78,24 +110,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save token & user
       localStorage.setItem('greenintel_token', access_token);
 
-      const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-      const avatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
+      const initials = encodeURIComponent(
+        userData.name
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase()
+      );
+      const fallbackAvatar = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
 
       const sessionUser: User = {
         id: userData.id || userData._id,
         name: userData.name,
         email: userData.email,
-        createdAt: userData.created_at,
-        avatarUrl
+        createdAt: userData.created_at || userData.createdAt,
+        avatarUrl: userData.profile_picture || userData.picture || userData.avatarUrl || fallbackAvatar,
+        provider: userData.provider || userData.auth_provider || 'local',
+        lastLogin: userData.last_login || userData.lastLogin,
+        googleId: userData.google_id || userData.googleId
       };
 
       setUser(sessionUser);
       localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
-    } catch (err: any) {
-      const errMsg = err.response?.data?.detail || err.message || 'Invalid email or password.';
+    } catch (err: unknown) {
+      const errMsg = extractErrorMessage(err, 'Invalid email or password.');
       setError(errMsg);
       setIsLoading(false);
-      throw new Error(errMsg);
+      throw new Error(errMsg, { cause: err });
     } finally {
       setIsLoading(false);
     }
@@ -116,24 +158,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       localStorage.setItem('greenintel_token', access_token);
 
-      const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-      const avatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
+      const initials = encodeURIComponent(
+        userData.name
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase()
+      );
+      const fallbackAvatar = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
 
       const sessionUser: User = {
         id: userData.id || userData._id,
         name: userData.name,
         email: userData.email,
-        createdAt: userData.created_at,
-        avatarUrl
+        createdAt: userData.created_at || userData.createdAt,
+        avatarUrl: userData.profile_picture || userData.picture || userData.avatarUrl || fallbackAvatar,
+        provider: userData.provider || userData.auth_provider || 'local',
+        lastLogin: userData.last_login || userData.lastLogin,
+        googleId: userData.google_id || userData.googleId
       };
 
       setUser(sessionUser);
       localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
-    } catch (err: any) {
-      const errMsg = err.response?.data?.detail || err.message || 'An error occurred during signup.';
+    } catch (err: unknown) {
+      const errMsg = extractErrorMessage(err, 'An error occurred during signup.');
       setError(errMsg);
       setIsLoading(false);
-      throw new Error(errMsg);
+      throw new Error(errMsg, { cause: err });
     } finally {
       setIsLoading(false);
     }
@@ -152,41 +204,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save token
       localStorage.setItem('greenintel_token', access_token);
 
-      // Generate a fallback avatar if Google picture is not present
-      const initials = encodeURIComponent(userData.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase());
-      const fallbackAvatarUrl = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
+      const initials = encodeURIComponent(
+        userData.name
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .substring(0, 2)
+          .toUpperCase()
+      );
+      const fallbackAvatar = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
 
       const sessionUser: User = {
         id: userData.id || userData._id,
         name: userData.name,
         email: userData.email,
         createdAt: userData.created_at || userData.createdAt || new Date().toISOString(),
-        avatarUrl: userData.picture || userData.profile_picture || userData.avatarUrl || fallbackAvatarUrl
+        avatarUrl: userData.profile_picture || userData.picture || userData.avatarUrl || fallbackAvatar,
+        provider: userData.provider || userData.auth_provider || 'google',
+        lastLogin: userData.last_login || userData.lastLogin,
+        googleId: userData.google_id || userData.googleId
       };
 
       setUser(sessionUser);
       localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
-    } catch (err: any) {
-      const errMsg = err.response?.data?.detail || err.message || 'Google Sign-In failed.';
+    } catch (err: unknown) {
+      const errMsg = extractErrorMessage(err, 'Google Sign-In failed.');
       setError(errMsg);
       setIsLoading(false);
-      throw new Error(errMsg);
+      throw new Error(errMsg, { cause: err });
     } finally {
       setIsLoading(false);
     }
   };
 
   // Logout
-  const logout = async () => {
-    try {
-      await api.post('/api/auth/logout');
-    } catch (err) {
-      console.warn("Backend logout endpoint failed or unreachable.", err);
-    } finally {
-      setUser(null);
-      localStorage.removeItem('greenintel_token');
-      localStorage.removeItem('greenintel_user');
-    }
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('greenintel_token');
+    localStorage.removeItem('greenintel_user');
+    window.location.href = '/';
   };
 
   return (
@@ -208,6 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

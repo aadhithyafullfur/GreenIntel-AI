@@ -2,28 +2,33 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Brain, Bell, Globe, Menu, X, Check
+  Brain, Bell, Menu, X
 } from 'lucide-react';
 import ProfileDropdown from './ProfileDropdown';
+import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../context/AuthContext';
+
 
 const Navbar: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeLang, setActiveLang] = useState('EN');
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(3);
 
-  const navLinks = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'Evaluations', path: '/history' },
-    { label: 'Reports', path: '/saved-reports' },
-    { label: 'Analytics', path: '/analytics' }
-  ];
+  const navLinks = isAuthenticated
+    ? [
+      { label: 'Projects', path: '/projects' },
+      { label: 'Analytics', path: '/dashboard' },
+      { label: 'History', path: '/history' },
+      { label: 'Saved Reports', path: '/saved-reports' }
+    ]
+    : [
+      { label: 'Home', path: '/' },
+      { label: 'Analytics', path: '/dashboard' }
+    ];
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] bg-white/70 dark:bg-black/60 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/10 transition-colors duration-300">
+    <header className="sticky top-0 z-50 h-[72px] bg-white/80 dark:bg-black/60 backdrop-blur-xl border-b border-black/[0.08] dark:border-white/10 transition-colors duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
         {/* Left Side: Brand Logo Group */}
@@ -49,7 +54,7 @@ const Navbar: React.FC = () => {
         </Link>
 
         {/* Center: Desktop Navigation links with sliding backdrop indicator */}
-        <nav className="hidden md:flex items-center gap-1.5 bg-black/[0.03] dark:bg-white/5 p-1 rounded-xl border border-black/[0.02] dark:border-white/5">
+        <nav className="hidden md:flex items-center gap-1.5 bg-black/[0.04] dark:bg-white/5 p-1 rounded-xl border border-black/[0.04] dark:border-white/5">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -62,7 +67,7 @@ const Navbar: React.FC = () => {
                 {isActive && (
                   <motion.span
                     layoutId="active-nav"
-                    className="absolute inset-0 bg-white dark:bg-white/10 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-black/[0.04] dark:border-white/5 z-0"
+                    className="absolute inset-0 bg-white dark:bg-white/10 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-none border border-black/[0.06] dark:border-white/5 z-0"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -74,41 +79,8 @@ const Navbar: React.FC = () => {
 
         {/* Right Side: Toolbar controls */}
         <div className="hidden md:flex items-center gap-3">
-
-          {/* Language Switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setLangMenuOpen(!langMenuOpen)}
-              className="p-2 text-text-muted hover:text-text-main bg-neutral-100 hover:bg-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 border border-black/[0.06] dark:border-white/10 rounded-xl transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold"
-            >
-              <Globe className="w-4 h-4" />
-              <span>{activeLang}</span>
-            </button>
-            <AnimatePresence>
-              {langMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  className="absolute right-0 mt-1.5 w-28 bg-white dark:bg-[#0A0A0A] border border-black/[0.08] dark:border-white/10 rounded-xl shadow-xl py-1 z-50 overflow-hidden"
-                >
-                  {['EN', 'HI', 'ES'].map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => {
-                        setActiveLang(lang);
-                        setLangMenuOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-text-main hover:bg-orange-500/[0.04] dark:hover:bg-white/5 text-left cursor-pointer"
-                    >
-                      <span>{lang === 'EN' ? 'English' : lang === 'HI' ? 'हिंदी' : 'Español'}</span>
-                      {activeLang === lang && <Check className="w-3.5 h-3.5 text-primary" />}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Theme Switcher Toggle */}
+          <ThemeToggle />
 
           {/* Notifications bell */}
           <button
@@ -184,26 +156,28 @@ const Navbar: React.FC = () => {
 
             <div className="pt-4 border-t border-black/[0.04] dark:border-white/[0.06] flex items-center justify-between gap-4">
               <span className="text-[10px] font-extrabold text-text-muted uppercase tracking-wider">Account Action</span>
-              {isAuthenticated ? (
-                <ProfileDropdown />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3.5 py-1.5 bg-neutral-100 dark:bg-white/5 border border-black/[0.06] dark:border-white/10 text-xs font-bold rounded-xl text-text-main"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/signup"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-xl"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                {isAuthenticated ? (
+                  <ProfileDropdown />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3.5 py-1.5 bg-neutral-100 dark:bg-white/5 border border-black/[0.06] dark:border-white/10 text-xs font-bold rounded-xl text-text-main"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-xl"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

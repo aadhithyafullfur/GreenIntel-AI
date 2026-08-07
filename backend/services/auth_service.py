@@ -94,21 +94,24 @@ async def authenticate_user(email: str, password_plain: str):
     logger.warning(f"Authentication failed: Incorrect password for user '{email}'.")
     return None
 
-async def create_google_user(name: str, email: str, profile_picture: Optional[str] = None):
+async def create_google_user(name: str, email: str, google_id: str, profile_picture: Optional[str] = None):
     """
     Registers a new user authenticated via Google OAuth and inserts their document into MongoDB Atlas.
     """
     verify_db_connected()
     
     email_lower = email.lower()
-    created_at_time = datetime.utcnow()
+    created_at_time = datetime.utcnow().isoformat()
 
     user_doc = {
         "name": name,
         "email": email_lower,
+        "google_id": google_id,
         "profile_picture": profile_picture,
         "auth_provider": "google",
-        "created_at": created_at_time.isoformat()
+        "provider": "google",
+        "created_at": created_at_time,
+        "last_login": created_at_time
     }
 
     db = get_database()

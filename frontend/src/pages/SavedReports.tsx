@@ -17,22 +17,29 @@ const SavedReports: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSavedReports = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.get('/api/reports');
-      setSavedItems(response.data);
-    } catch (err: any) {
-      console.error("Failed to load reports:", err);
-      setError(err.response?.data?.detail || "Failed to load saved reports.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSavedReports();
+    let isMounted = true;
+    api.get('/api/reports')
+      .then((response) => {
+        if (isMounted) {
+          setSavedItems(response.data);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          console.error("Failed to load reports:", err);
+          const errMsg = err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+            : undefined;
+          setError(errMsg || "Failed to load saved reports.");
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleDeleteBookmark = async (id: string) => {
@@ -43,8 +50,11 @@ const SavedReports: React.FC = () => {
       await api.delete(`/api/reports/${id}`);
       alert("Report removed from saved bookmarks.");
       setSavedItems(prev => prev.filter(item => item.id !== id));
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Failed to delete bookmark.");
+    } catch (err: unknown) {
+      const errMsg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : undefined;
+      alert(errMsg || "Failed to delete bookmark.");
     }
   };
 

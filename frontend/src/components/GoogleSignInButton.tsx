@@ -15,7 +15,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
   const [isLoading, setIsLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const handleSuccess = async (credentialResponse: any) => {
+  const handleSuccess = async (credentialResponse: { credential?: string }) => {
     console.log("Google Sign-In response received:", credentialResponse);
     console.log("Google ID Token (credential):", credentialResponse.credential);
 
@@ -31,8 +31,8 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
     try {
       await loginWithGoogle(credentialResponse.credential);
       onSuccess?.();
-    } catch (err: any) {
-      const errMsg = err.message || "Failed to authenticate with Google.";
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to authenticate with Google.";
       setLocalError(errMsg);
       onError?.(errMsg);
     } finally {

@@ -67,13 +67,20 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const modalRef = useRef<HTMLDivElement>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const isLoggedIn = !!localStorage.getItem('greenintel_token');
+
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setIsBookmarked(false);
+    }
+  }
 
   // Prevent scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setIsBookmarked(false);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -106,9 +113,12 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
       });
       setIsBookmarked(true);
       alert("Report saved to your bookmarks successfully!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.response?.data?.detail || "Failed to bookmark report.");
+      const errMsg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : undefined;
+      alert(errMsg || "Failed to bookmark report.");
     }
   };
 
@@ -321,7 +331,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
                           <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Compliance Score</span>
                           <div className="my-3 relative flex items-center justify-center">
                             {/* Circle Progress bar */}
-                            <svg className="w-20 h-20 transform -rotate-90">
+                            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
                               <circle
                                 cx="40"
                                 cy="40"

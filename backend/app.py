@@ -24,6 +24,7 @@ try:
     from backend.routes.auth_routes import router as auth_router
     from backend.routes.evaluation_routes import router as evaluation_router
     from backend.routes.google_auth_routes import router as google_auth_router
+    from backend.routes.analytics_routes import router as analytics_router, alias_router as analytics_alias_router
 except ImportError:
     from routes.document_routes import router as document_router
     from utils.classifier import initialize_model_if_missing
@@ -31,6 +32,7 @@ except ImportError:
     from routes.auth_routes import router as auth_router
     from routes.evaluation_routes import router as evaluation_router
     from routes.google_auth_routes import router as google_auth_router
+    from routes.analytics_routes import router as analytics_router, alias_router as analytics_alias_router
 
 
 from fastapi.responses import JSONResponse
@@ -52,12 +54,22 @@ async def database_offline_exception_handler(request, exc):
     )
 
 # CORS configurations
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this to authorized origins
+    allow_origins=origins,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Ensure uploads and models directory exist
@@ -72,6 +84,8 @@ app.include_router(document_router, tags=["document-evaluation"])
 app.include_router(auth_router)
 app.include_router(evaluation_router)
 app.include_router(google_auth_router)
+app.include_router(analytics_router)
+app.include_router(analytics_alias_router)
 
 
 @app.on_event("startup")

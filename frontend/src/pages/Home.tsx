@@ -42,7 +42,20 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchStats();
+    let isMounted = true;
+    api.get('/api/evaluations/stats')
+      .then((response) => {
+        if (isMounted) {
+          setStats(response.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch dashboard stats:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const scrollToUpload = () => {
@@ -81,13 +94,15 @@ const Home: React.FC = () => {
               : d
           )
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Classification error for ' + doc.file.name, err);
-        const errMsg = err.response?.data?.detail || `Failed to evaluate "${doc.file.name}".`;
+        const errMsg = err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+          : undefined;
 
         setDocuments((prev) =>
           prev.map((d) =>
-            d.id === doc.id ? { ...d, status: 'error', error: errMsg } : d
+            d.id === doc.id ? { ...d, status: 'error', error: errMsg || `Failed to evaluate "${doc.file.name}".` } : d
           )
         );
 

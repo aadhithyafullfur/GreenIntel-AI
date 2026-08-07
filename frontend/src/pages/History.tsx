@@ -19,22 +19,29 @@ const History: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHistory = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await api.get('/api/evaluations/history');
-      setHistoryData(response.data);
-    } catch (err: any) {
-      console.error("Failed to load history:", err);
-      setError(err.response?.data?.detail || "Failed to load evaluation history from server.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchHistory();
+    let isMounted = true;
+    api.get('/api/evaluations/history')
+      .then((response) => {
+        if (isMounted) {
+          setHistoryData(response.data);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          console.error("Failed to load history:", err);
+          const errMsg = err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+            : undefined;
+          setError(errMsg || "Failed to load evaluation history from server.");
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleClearLogs = async () => {
@@ -45,8 +52,11 @@ const History: React.FC = () => {
       await api.post('/api/evaluations/clear-logs');
       alert("Logs cleared successfully.");
       setHistoryData([]);
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Failed to clear logs.");
+    } catch (err: unknown) {
+      const errMsg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : undefined;
+      alert(errMsg || "Failed to clear logs.");
     }
   };
 
@@ -58,8 +68,11 @@ const History: React.FC = () => {
       await api.delete(`/api/evaluations/${id}`);
       alert("Evaluation log deleted successfully.");
       setHistoryData(prev => prev.filter(item => item.id !== id));
-    } catch (err: any) {
-      alert(err.response?.data?.detail || "Failed to delete log.");
+    } catch (err: unknown) {
+      const errMsg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+        : undefined;
+      alert(errMsg || "Failed to delete log.");
     }
   };
 
