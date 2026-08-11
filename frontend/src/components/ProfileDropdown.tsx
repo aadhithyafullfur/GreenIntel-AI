@@ -9,11 +9,8 @@ import {
   LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-
 export const ProfileDropdown: React.FC = () => {
   const { user, logout } = useAuth();
-  const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -29,8 +26,6 @@ export const ProfileDropdown: React.FC = () => {
   }, []);
 
   if (!user) return null;
-
-  const isDark = theme === 'dark';
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -72,10 +67,7 @@ export const ProfileDropdown: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute right-0 mt-3 w-64 rounded-2xl p-2 z-[100] border transition-all duration-300 ${isDark
-                ? 'bg-[#0A0A0A]/75 backdrop-blur-xl border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.6)] orange-glow'
-                : 'bg-white/80 backdrop-blur-md border-neutral-200/50 shadow-xl'
-              }`}
+            className="absolute right-0 mt-3 w-64 rounded-2xl p-2 z-[100] bg-card-base border border-border-base text-text-main shadow-2xl backdrop-blur-xl transition-all duration-300"
           >
             {/* Header: Large profile picture, Name, Email */}
             <div className="flex flex-col items-center px-4 py-4 text-center border-b border-black/[0.05] dark:border-white/[0.05] mb-1">

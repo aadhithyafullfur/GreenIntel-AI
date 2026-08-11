@@ -8,9 +8,13 @@ import SavedReports from './pages/SavedReports';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
+import ProjectsHub from './pages/ProjectsHub';
+import ProjectWorkspace from './pages/ProjectWorkspace';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
+
+import ErrorBoundary from './components/ErrorBoundary';
 
 const AppContent: React.FC = () => {
   return (
@@ -26,6 +30,22 @@ const AppContent: React.FC = () => {
           <Route path="/signup" element={<Signup />} />
 
           {/* Protected Routes */}
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <ProjectsHub />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId"
+            element={
+              <ProtectedRoute>
+                <ProjectWorkspace />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -86,11 +106,13 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

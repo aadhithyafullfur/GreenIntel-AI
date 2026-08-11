@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, Calendar, FileText, CheckCircle, Download, RefreshCw } from 'lucide-react';
 import type { FilterOptions } from '../../types/analytics';
+import { CustomSelect } from '../common/CustomSelect';
 
 interface DashboardFiltersProps {
   filters: FilterOptions;
@@ -9,6 +10,30 @@ interface DashboardFiltersProps {
   onExport: (format: 'csv' | 'pdf') => void;
   isRefreshing?: boolean;
 }
+
+const DATE_RANGE_OPTIONS = [
+  { value: 'all', label: 'All Time' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+  { value: '90d', label: 'Last 90 Days' },
+  { value: 'ytd', label: 'Year to Date' }
+];
+
+const DOC_TYPE_OPTIONS = [
+  { value: 'all', label: 'All Document Types' },
+  { value: 'energy', label: 'Energy Reports' },
+  { value: 'water', label: 'Water Reports' },
+  { value: 'waste', label: 'Waste Reports' },
+  { value: 'audit', label: 'Audit Reports' },
+  { value: 'compliance', label: 'Compliance Reports' }
+];
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Statuses' },
+  { value: 'compliant', label: 'Compliant' },
+  { value: 'partially compliant', label: 'Partially Compliant' },
+  { value: 'non-compliant', label: 'Non-Compliant' }
+];
 
 export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   filters,
@@ -34,51 +59,39 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
       {/* Filter Selectors Group */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Date Range Selector */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text-main">
-          <Calendar className="w-3.5 h-3.5 text-text-muted" />
-          <select
+        <div className="w-36">
+          <CustomSelect
             value={filters.dateRange}
-            onChange={(e) => onChange({ ...filters, dateRange: e.target.value })}
-            className="bg-transparent focus:outline-none text-xs font-semibold cursor-pointer text-text-main"
-          >
-            <option value="all">All Time</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-            <option value="90d">Last 90 Days</option>
-            <option value="ytd">Year to Date</option>
-          </select>
+            onChange={(val) => onChange({ ...filters, dateRange: val })}
+            options={DATE_RANGE_OPTIONS}
+            icon={Calendar}
+            size="sm"
+            ariaLabel="Filter by Date Range"
+          />
         </div>
 
         {/* Document Type Selector */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text-main">
-          <FileText className="w-3.5 h-3.5 text-text-muted" />
-          <select
+        <div className="w-44">
+          <CustomSelect
             value={filters.docType}
-            onChange={(e) => onChange({ ...filters, docType: e.target.value })}
-            className="bg-transparent focus:outline-none text-xs font-semibold cursor-pointer text-text-main"
-          >
-            <option value="all">All Document Types</option>
-            <option value="energy">Energy Reports</option>
-            <option value="water">Water Reports</option>
-            <option value="waste">Waste Reports</option>
-            <option value="audit">Audit Reports</option>
-            <option value="compliance">Compliance Reports</option>
-          </select>
+            onChange={(val) => onChange({ ...filters, docType: val })}
+            options={DOC_TYPE_OPTIONS}
+            icon={FileText}
+            size="sm"
+            ariaLabel="Filter by Document Type"
+          />
         </div>
 
         {/* Compliance Status Selector */}
-        <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-text-main">
-          <CheckCircle className="w-3.5 h-3.5 text-text-muted" />
-          <select
+        <div className="w-40">
+          <CustomSelect
             value={filters.status}
-            onChange={(e) => onChange({ ...filters, status: e.target.value })}
-            className="bg-transparent focus:outline-none text-xs font-semibold cursor-pointer text-text-main"
-          >
-            <option value="all">All Statuses</option>
-            <option value="compliant">Compliant</option>
-            <option value="partially compliant">Partially Compliant</option>
-            <option value="non-compliant">Non-Compliant</option>
-          </select>
+            onChange={(val) => onChange({ ...filters, status: val })}
+            options={STATUS_OPTIONS}
+            icon={CheckCircle}
+            size="sm"
+            ariaLabel="Filter by Compliance Status"
+          />
         </div>
 
         {/* Refresh Action */}

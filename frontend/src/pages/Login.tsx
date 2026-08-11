@@ -19,7 +19,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/";
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/projects";
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -264,7 +264,7 @@ const Login: React.FC = () => {
               <div className="w-full border-t border-border-base/55"></div>
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-bold">
-              <span className="bg-bg-base dark:bg-[#151515] px-3.5 text-text-muted font-sans">
+              <span className="bg-card-base px-3.5 text-text-muted font-sans">
                 Or continue with
               </span>
             </div>

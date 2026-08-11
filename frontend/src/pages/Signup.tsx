@@ -22,7 +22,7 @@ const Signup: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/", { replace: true });
+      navigate("/projects", { replace: true });
     }
     return () => {
       clearError();
@@ -293,7 +293,7 @@ const Signup: React.FC = () => {
               <div className="w-full border-t border-border-base/55"></div>
             </div>
             <div className="relative flex justify-center text-[10px] uppercase font-bold">
-              <span className="bg-bg-base dark:bg-[#151515] px-3.5 text-text-muted font-sans">
+              <span className="bg-card-base px-3.5 text-text-muted font-sans">
                 Or continue with
               </span>
             </div>

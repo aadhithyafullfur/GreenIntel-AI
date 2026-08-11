@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
 
         {/* Left Side: Brand Logo Group */}
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to={isAuthenticated ? "/projects" : "/"} className="flex items-center gap-3 group">
           <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-rose-500 shadow-sm shadow-primary/20 transition-transform group-hover:scale-[1.02]">
             <Brain className="w-5 h-5 text-white" />
           </div>

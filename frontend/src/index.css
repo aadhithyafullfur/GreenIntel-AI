@@ -9,10 +9,21 @@
   --color-primary-light: var(--primary-light);
   --color-bg-base: var(--bg-base);
   --color-card-base: var(--card-base);
+  --color-surface-secondary: var(--surface-secondary);
   --color-border-base: var(--border-base);
   --color-text-main: var(--text-main);
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --color-dropdown-bg: var(--dropdown-bg);
+  --color-dropdown-text: var(--dropdown-text);
+  --color-dropdown-border: var(--dropdown-border);
+  --color-dropdown-hover: var(--dropdown-hover);
+  --color-dropdown-selected: var(--dropdown-selected);
 }
 
 :root {
@@ -21,12 +32,26 @@
   --primary-light: #FFEDD5;
   --bg-base: #FAFAFA;
   --card-base: #FFFFFF;
-  --border-base: #E5E7EB;
+  --surface-secondary: #F1F5F9;
+  --border-base: #E2E8F0;
   --text-main: #0F172A;
   --text-muted: #64748B;
   --accent: #EA580C;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
   --grid-color: rgba(0, 0, 0, 0.03);
   --glow-color: rgba(249, 115, 22, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.08);
+
+  --dropdown-bg: #FFFFFF;
+  --dropdown-text: #0F172A;
+  --dropdown-border: #E2E8F0;
+  --dropdown-hover: #F1F5F9;
+  --dropdown-selected: rgba(249, 115, 22, 0.12);
+  --dropdown-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
 
 .dark {
@@ -35,12 +60,26 @@
   --primary-light: rgba(249, 115, 22, 0.15);
   --bg-base: #0A0A0A;
   --card-base: rgba(255, 255, 255, 0.04);
+  --surface-secondary: rgba(255, 255, 255, 0.06);
   --border-base: rgba(255, 255, 255, 0.08);
   --text-main: #FFFFFF;
   --text-muted: #A1A1AA;
   --accent: #FB923C;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
   --grid-color: rgba(255, 255, 255, 0.02);
   --glow-color: rgba(249, 115, 22, 0.22);
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  --dropdown-bg: #141414;
+  --dropdown-text: #FFFFFF;
+  --dropdown-border: rgba(255, 255, 255, 0.12);
+  --dropdown-hover: rgba(255, 255, 255, 0.08);
+  --dropdown-selected: rgba(249, 115, 22, 0.2);
+  --dropdown-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.7), 0 0 30px -10px rgba(249, 115, 22, 0.18);
 }
 
 @layer utilities {

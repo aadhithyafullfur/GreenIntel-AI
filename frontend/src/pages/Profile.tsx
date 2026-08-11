@@ -98,12 +98,7 @@ const Profile: React.FC = () => {
 
         {/* Left column: Profile Picture & Provider Card */}
         <div className="md:col-span-1 space-y-4">
-          <div
-            className={`border rounded-2xl p-6 flex flex-col items-center text-center relative overflow-hidden transition-all duration-300 ${isDark
-                ? 'bg-[#0A0A0A]/50 border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] orange-glow'
-                : 'bg-white/80 border-neutral-200/50 shadow-md'
-              }`}
-          >
+          <div className="bg-card-base border border-border-base rounded-2xl p-6 flex flex-col items-center text-center relative overflow-hidden shadow-sm transition-all duration-300">
             {/* Glow bar */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-rose-500" />
 
@@ -176,10 +171,7 @@ const Profile: React.FC = () => {
 
         {/* Right column: Details and sustainability metrics */}
         <div className="md:col-span-2 space-y-4">
-          <div
-            className={`border rounded-2xl p-6 shadow-sm space-y-6 ${isDark ? 'bg-[#0A0A0A]/30 border-white/10' : 'bg-white/50 border-neutral-200/50'
-              }`}
-          >
+          <div className="bg-card-base border border-border-base rounded-2xl p-6 shadow-sm space-y-6">
             {/* Account Details */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">

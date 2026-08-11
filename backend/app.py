@@ -25,6 +25,7 @@ try:
     from backend.routes.evaluation_routes import router as evaluation_router
     from backend.routes.google_auth_routes import router as google_auth_router
     from backend.routes.analytics_routes import router as analytics_router, alias_router as analytics_alias_router
+    from backend.routes.project_routes import router as project_router
 except ImportError:
     from routes.document_routes import router as document_router
     from utils.classifier import initialize_model_if_missing
@@ -33,6 +34,7 @@ except ImportError:
     from routes.evaluation_routes import router as evaluation_router
     from routes.google_auth_routes import router as google_auth_router
     from routes.analytics_routes import router as analytics_router, alias_router as analytics_alias_router
+    from routes.project_routes import router as project_router
 
 
 from fastapi.responses import JSONResponse
@@ -86,6 +88,7 @@ app.include_router(evaluation_router)
 app.include_router(google_auth_router)
 app.include_router(analytics_router)
 app.include_router(analytics_alias_router)
+app.include_router(project_router)
 
 
 @app.on_event("startup")
@@ -97,8 +100,8 @@ async def startup_event():
     3. Initializes DistilBERT classifier model
     4. Displays ready status
     """
-    print("🚀 Starting GreenIntel AI Server...")
-    logger.info("🚀 Starting GreenIntel AI Server...")
+    print("[START] Starting GreenIntel AI Server...")
+    logger.info("[START] Starting GreenIntel AI Server...")
     
     # Establish MongoDB Atlas Connection
     db_success = await connect_to_mongo()
@@ -112,8 +115,8 @@ async def startup_event():
         logger.error(f"Error during startup model initialization: {e}")
         
     if db_success:
-        print("✅ Server Ready")
-        logger.info("✅ Server Ready")
+        print("[OK] Server Ready")
+        logger.info("[OK] Server Ready")
     else:
         logger.warning("Server startup completed with disconnected MongoDB Atlas status.")
 

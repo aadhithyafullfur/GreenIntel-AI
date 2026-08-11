@@ -27,7 +27,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('greenintel_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -195,10 +202,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async (credential: string): Promise<void> => {
     setIsLoading(true);
     setError(null);
-    console.log("Sending Google ID token to backend /api/auth/google...");
     try {
       const response = await api.post('/api/auth/google', { token: credential });
-      console.log("Backend response for Google Login received:", response.data);
       const { access_token, user: userData } = response.data;
 
       // Save token

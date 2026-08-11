@@ -22,11 +22,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none transition-colors duration-300 ${
-        isDark
-          ? 'bg-[#050505] text-white'
-          : 'bg-[#FCFCFC] text-gray-900'
-      }`}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden select-none bg-bg-base text-text-main transition-colors duration-300"
     >
       {/* Background Soft Ambient Glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

@@ -16,9 +16,6 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSuccess = async (credentialResponse: { credential?: string }) => {
-    console.log("Google Sign-In response received:", credentialResponse);
-    console.log("Google ID Token (credential):", credentialResponse.credential);
-
     if (!credentialResponse.credential) {
       const errMsg = "No credentials received from Google.";
       setLocalError(errMsg);

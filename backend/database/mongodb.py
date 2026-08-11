@@ -16,9 +16,9 @@ DB_NAME = "greenintel_ai"
 
 # 3. Verify MONGODB_URI exists and log a clear startup message
 if MONGODB_URI:
-    print("✅ MONGODB_URI Loaded")
+    print("[OK] MONGODB_URI Loaded")
 else:
-    print("❌ MONGODB_URI Missing")
+    print("[ERROR] MONGODB_URI Missing")
 
 # Setup custom logging for database connection status
 SUCCESS_LEVEL_NUM = 25
@@ -62,7 +62,7 @@ async def connect_to_mongo():
     
     if not MONGODB_URI:
         print("==================================================")
-        print("❌ MongoDB Atlas Connection Failed")
+        print("[ERROR] MongoDB Atlas Connection Failed")
         print("Reason: MONGODB_URI environment variable is missing.")
         print("==================================================")
         logger.error("[DB] MONGODB_URI environment variable is missing.")
@@ -90,10 +90,10 @@ async def connect_to_mongo():
         
         # 5. Print startup success banner
         print("==================================================")
-        print("🚀 Starting GreenIntel AI Server")
+        print("[START] Starting GreenIntel AI Server")
         print("==================================================")
-        print("✅ MongoDB Atlas Connected Successfully")
-        print(f"📦 Database: {DB_NAME}")
+        print("[OK] MongoDB Atlas Connected Successfully")
+        print(f"[DB] Database: {DB_NAME}")
         print("==================================================")
         
         # 13. Start background reconnection and connection monitoring task
@@ -107,7 +107,7 @@ async def connect_to_mongo():
         
         # 6. Print failure message
         print("==================================================")
-        print("❌ MongoDB Atlas Connection Failed")
+        print("[ERROR] MongoDB Atlas Connection Failed")
         print(f"Reason: {str(e)}")
         print("==================================================")
         logger.error(f"[DB] Connection failed: {str(e)}")
@@ -174,8 +174,8 @@ async def close_mongo_connection():
     global client, db, is_connected
     if client:
         client.close()
-        print("🔴 MongoDB Connection Closed")
-        logger.info("🔴 MongoDB Connection Closed")
+        print("[DB] MongoDB Connection Closed")
+        logger.info("[DB] MongoDB Connection Closed")
         client = None
         db = None
         is_connected = False

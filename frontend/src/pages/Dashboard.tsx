@@ -8,6 +8,7 @@ import {
   Brain, ShieldCheck, Activity, BarChart3, Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { KPICard } from '../components/dashboard/KPICard';
 import { ChartCard } from '../components/dashboard/ChartCard';
 import { HeatmapChart } from '../components/dashboard/HeatmapChart';
@@ -35,8 +36,15 @@ import type {
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const tooltipStyle = useMemo(() => (
+    theme === 'dark'
+      ? { background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }
+      : { background: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#0f172a', fontSize: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }
+  ), [theme]);
 
   // Filter State
   const [filters, setFilters] = useState<FilterOptions>({
@@ -223,7 +231,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
                   <YAxis stroke="#888888" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Area type="monotone" dataKey="uploads" stroke="#F97316" strokeWidth={3} fillOpacity={1} fill="url(#uploadGrad)" />
                 </AreaChart>
@@ -245,7 +253,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
                   <YAxis stroke="#888888" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Line type="monotone" dataKey="evaluations" stroke="#10B981" strokeWidth={3} dot={{ r: 4, fill: '#10B981' }} activeDot={{ r: 6 }} />
                 </LineChart>
@@ -280,7 +288,7 @@ export const Dashboard: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -311,7 +319,7 @@ export const Dashboard: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Legend verticalAlign="bottom" height={36} iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
                 </PieChart>
@@ -333,7 +341,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis dataKey="month" stroke="#888888" fontSize={11} tickLine={false} />
                   <YAxis domain={[50, 100]} stroke="#888888" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Line type="monotone" dataKey="avgScore" name="Avg Score" stroke="#3B82F6" strokeWidth={3} />
                   <Line type="monotone" dataKey="targetScore" name="Target (85)" stroke="#10B981" strokeWidth={2} strokeDasharray="4 4" />
@@ -359,7 +367,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis type="number" stroke="#888888" fontSize={11} />
                   <YAxis dataKey="category" type="category" stroke="#888888" fontSize={10} tickLine={false} width={130} />
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Bar dataKey="count" fill="#8B5CF6" radius={[0, 8, 8, 0]} />
                 </BarChart>
@@ -381,7 +389,7 @@ export const Dashboard: React.FC = () => {
                   <XAxis dataKey="docType" stroke="#888888" fontSize={11} tickLine={false} />
                   <YAxis stroke="#888888" fontSize={11} tickLine={false} />
                   <Tooltip
-                    contentStyle={{ background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={tooltipStyle}
                   />
                   <Bar dataKey="avgTime" name="Avg Latency (sec)" fill="#06B6D4" radius={[8, 8, 0, 0]} />
                 </BarChart>
