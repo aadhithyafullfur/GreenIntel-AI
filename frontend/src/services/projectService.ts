@@ -158,3 +158,29 @@ export const getProjectInsights = async (projectId: string): Promise<ProjectInsi
   }
 };
 
+export const downloadProjectReportPDF = async (projectId: string): Promise<void> => {
+  try {
+    const token = localStorage.getItem('greenintel_token');
+    const response = await api.get(`/api/projects/${projectId}/pdf-report`, {
+      responseType: 'blob',
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+    const blob = new Blob([response.data], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const win = window.open(url, '_blank');
+    if (!win) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Project_Audit_Report_${projectId}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  } catch (err) {
+    handleApiError(err, 'Failed to download project report PDF.');
+  }
+};
+
+

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Building2, Upload, FileText, BarChart3, ShieldCheck, Clock, Brain, Settings,
   Sparkles, ArrowLeft, Trash2, Eye, CheckCircle2, AlertCircle,
-  Activity, MapPin, AlertTriangle
+  MapPin, AlertTriangle, Layers, Download
 } from 'lucide-react';
 import {
   getProjectDetails,
@@ -15,7 +15,8 @@ import {
   getProjectAnalytics,
   getProjectTimeline,
   getProjectInsights,
-  deleteProject
+  deleteProject,
+  downloadProjectReportPDF
 } from '../services/projectService';
 import type {
   Project,
@@ -26,6 +27,7 @@ import type {
 import FileUpload from '../components/FileUpload';
 import FullScreenReportModal from '../components/FullScreenReportModal';
 import { ProjectAnalyticsDashboard } from '../components/projects/ProjectAnalyticsDashboard';
+import { DocumentComparisonModal } from '../components/projects/DocumentComparisonModal';
 import type { ClassificationResult } from '../types/document';
 
 export const ProjectWorkspace: React.FC = () => {
@@ -48,6 +50,7 @@ export const ProjectWorkspace: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
 
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -90,9 +93,7 @@ export const ProjectWorkspace: React.FC = () => {
     setIsUploading(true);
 
     try {
-      // Execute document upload pipeline
       await uploadProjectDocuments(projectId, files);
-      // Refresh workspace data
       await loadProjectData();
     } catch (err: any) {
       console.error('Document upload error:', err);
@@ -114,6 +115,15 @@ export const ProjectWorkspace: React.FC = () => {
       console.error('Failed to analyze project:', err);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleDownloadPDFReport = async () => {
+    if (!projectId) return;
+    try {
+      await downloadProjectReportPDF(projectId);
+    } catch (err) {
+      console.error('Failed to download project report:', err);
     }
   };
 
@@ -195,16 +205,36 @@ export const ProjectWorkspace: React.FC = () => {
                     <MapPin className="w-3 h-3" /> {project.city || project.location}
                   </span>
                 )}
+                <span>• {documents.length} Document{documents.length !== 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
 
-          {/* Primary Action Button */}
-          <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+          {/* Primary Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
+            {documents.length > 1 && (
+              <button
+                onClick={() => setIsComparing(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 text-text-main border border-black/5 dark:border-white/10 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                <Layers className="w-4 h-4 text-primary" />
+                <span>Compare Docs</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleDownloadPDFReport}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 text-text-main border border-black/5 dark:border-white/10 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              title="Download Project Audit Report"
+            >
+              <Download className="w-4 h-4 text-primary" />
+              <span>Project Report</span>
+            </button>
+
             <button
               onClick={handleTriggerAnalyzeProject}
               disabled={isAnalyzing || documents.length === 0}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all cursor-pointer disabled:opacity-50"
             >
               <Sparkles className={`w-4 h-4 ${isAnalyzing ? 'animate-spin' : ''}`} />
               <span>{isAnalyzing ? 'Analyzing Project...' : 'ANALYZE PROJECT'}</span>
@@ -252,10 +282,10 @@ export const ProjectWorkspace: React.FC = () => {
             <div className="bg-card-base p-5 rounded-2xl border border-border-base shadow-sm space-y-4">
               <div className="space-y-1">
                 <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
-                  Upload Project Documents
+                  Upload Sustainability Documents
                 </h3>
                 <p className="text-[11px] text-text-muted font-sans">
-                  Drag & drop PDFs or browse files to add energy, water, or waste reports to this project.
+                  Drag & drop PDFs or browse files to add energy, water, waste, audit, or compliance reports.
                 </p>
               </div>
 
@@ -273,16 +303,16 @@ export const ProjectWorkspace: React.FC = () => {
             <div className="bg-card-base p-5 rounded-2xl border border-border-base shadow-sm space-y-3">
               <h4 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-primary" />
-                <span>Required Documentation</span>
+                <span>Required Documentation Checklist</span>
               </h4>
               <div className="space-y-2 text-xs">
                 {['Energy Report', 'Water Report', 'Waste Report', 'Audit Report', 'Compliance Document'].map((type) => {
                   const exists = documents.some((d) => d.document_type === type);
                   return (
-                    <div key={type} className="flex items-center justify-between p-2 rounded-lg bg-neutral-50 dark:bg-white/5 border border-black/5 dark:border-white/5">
-                      <span className="font-medium text-text-main font-sans">{type}</span>
+                    <div key={type} className="flex items-center justify-between p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base">
+                      <span className="font-semibold text-text-main font-sans">{type}</span>
                       {exists ? (
-                        <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                        <span className="text-[10px] font-extrabold text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3" /> Uploaded
                         </span>
                       ) : (
@@ -301,23 +331,35 @@ export const ProjectWorkspace: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
-                Project Document Pool ({documents.length})
+                Project Documents Pool ({documents.length})
               </h3>
 
-              <button
-                onClick={handleTriggerAnalyzeProject}
-                disabled={isAnalyzing || documents.length === 0}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer disabled:opacity-50"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Analyze All Documents</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {documents.length > 1 && (
+                  <button
+                    onClick={() => setIsComparing(true)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-white/5 dark:hover:bg-white/10 text-text-main border border-black/5 dark:border-white/10 text-xs font-bold rounded-xl cursor-pointer"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-primary" />
+                    <span>Compare</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleTriggerAnalyzeProject}
+                  disabled={isAnalyzing || documents.length === 0}
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Analyze All</span>
+                </button>
+              </div>
             </div>
 
             {documents.length === 0 ? (
-              <div className="border border-dashed border-border-base rounded-2xl p-12 text-center bg-card-base/50 space-y-2">
+              <div className="border border-dashed border-border-base rounded-3xl p-12 text-center bg-card-base/50 space-y-2">
                 <FileText className="w-8 h-8 text-text-muted mx-auto" />
-                <h4 className="text-xs font-bold text-text-main">No Documents in Project</h4>
+                <h4 className="text-xs font-bold text-text-main">No Documents in Project Workspace</h4>
                 <p className="text-xs text-text-muted max-w-xs mx-auto">
                   Upload PDFs using the left uploader to begin automated IGBC classification & compliance analysis.
                 </p>
@@ -334,7 +376,7 @@ export const ProjectWorkspace: React.FC = () => {
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-0.5 min-w-0">
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded uppercase">
+                          <span className="text-[10px] font-extrabold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded uppercase">
                             {doc.document_type || 'Processing'}
                           </span>
                           <h4 className="text-xs font-bold text-text-main truncate font-sans pt-1" title={doc.filename}>
@@ -342,16 +384,42 @@ export const ProjectWorkspace: React.FC = () => {
                           </h4>
                         </div>
 
-                        <span className="text-xs font-extrabold font-display px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                        <span className={`text-xs font-extrabold font-display px-2.5 py-1 rounded-xl border ${
+                          doc.compliance_score >= 80
+                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                            : doc.compliance_score >= 60
+                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                            : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                        }`}>
                           {doc.compliance_score || 0}%
                         </span>
                       </div>
 
-                      {/* Status Pipeline Animation */}
-                      <div className="flex items-center gap-1.5 text-[10px] text-text-muted pt-1">
-                        <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
-                        <span>Status: <span className="font-bold text-text-main">{doc.overall_status || 'Completed'}</span></span>
-                        <span>• Confidence: {doc.confidence ? `${(doc.confidence * 100).toFixed(0)}%` : 'N/A'}</span>
+                      {/* Processing Pipeline Lifecycle */}
+                      <div className="p-3 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base/60 space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] font-extrabold text-text-muted uppercase">
+                          <span>Pipeline Lifecycle</span>
+                          <span className="text-emerald-500">Completed</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-[9.5px] font-semibold text-text-muted flex-wrap">
+                          <span className="text-emerald-500">✓ Upload</span> →
+                          <span className="text-emerald-500">✓ Extract</span> →
+                          <span className="text-emerald-500">✓ Classify</span> →
+                          <span className="text-emerald-500">✓ Evaluate</span> →
+                          <span className="text-emerald-500">✓ Complete</span>
+                        </div>
+                      </div>
+
+                      {/* Summary Metrics */}
+                      <div className="flex items-center justify-between text-[11px] text-text-muted pt-1">
+                        <span className="flex items-center gap-1 text-emerald-500 font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {doc.passed_checks || 0} Passed
+                        </span>
+                        <span className="flex items-center gap-1 text-amber-500 font-bold">
+                          <AlertTriangle className="w-3.5 h-3.5" />
+                          {(doc.issues || []).length} Issue{(doc.issues || []).length !== 1 ? 's' : ''}
+                        </span>
                       </div>
                     </div>
 
@@ -363,15 +431,15 @@ export const ProjectWorkspace: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setSelectedReport(doc as ClassificationResult)}
-                          className="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg border border-primary/20 transition-colors cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl border border-primary/20 transition-colors cursor-pointer flex items-center gap-1"
                         >
-                          <Eye className="w-3 h-3" />
-                          <span>View Report</span>
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Analysis</span>
                         </button>
 
                         <button
                           onClick={() => handleDeleteDocument(doc._id)}
-                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg border border-red-500/20 transition-colors cursor-pointer"
+                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-xl border border-red-500/20 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -392,24 +460,34 @@ export const ProjectWorkspace: React.FC = () => {
             <h3 className="text-xs font-bold text-text-main uppercase tracking-wider font-sans">
               All Project Documents ({documents.length})
             </h3>
+
+            {documents.length > 1 && (
+              <button
+                onClick={() => setIsComparing(true)}
+                className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-xl border border-primary/20 cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Compare Selected</span>
+              </button>
+            )}
           </div>
 
-          <div className="overflow-x-auto custom-scrollbar">
+          <div className="overflow-x-auto custom-scrollbar border border-border-base rounded-2xl">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-border-base text-text-muted font-bold uppercase text-[10px] tracking-wider">
-                  <th className="py-3 px-4">Filename</th>
-                  <th className="py-3 px-4">Document Type</th>
-                  <th className="py-3 px-4">Confidence</th>
-                  <th className="py-3 px-4">Compliance Score</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Upload Date</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="border-b border-border-base bg-black/[0.04] dark:bg-white/[0.05] text-text-muted font-extrabold uppercase text-[10px] tracking-wider">
+                  <th className="py-3.5 px-4">Filename</th>
+                  <th className="py-3.5 px-4">Document Type</th>
+                  <th className="py-3.5 px-4">Confidence</th>
+                  <th className="py-3.5 px-4">Compliance Score</th>
+                  <th className="py-3.5 px-4">Issues Found</th>
+                  <th className="py-3.5 px-4">Upload Date</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border-base/60">
+              <tbody className="divide-y divide-border-base">
                 {documents.map((doc) => (
-                  <tr key={doc._id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+                  <tr key={doc._id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
                     <td className="py-3.5 px-4 font-bold text-text-main">{doc.filename}</td>
                     <td className="py-3.5 px-4">
                       <span className="bg-primary/10 border border-primary/20 text-primary font-bold text-[10px] px-2 py-0.5 rounded">
@@ -418,18 +496,18 @@ export const ProjectWorkspace: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 font-mono">{doc.confidence ? `${(doc.confidence * 100).toFixed(1)}%` : 'N/A'}</td>
                     <td className="py-3.5 px-4 font-extrabold text-emerald-500">{doc.compliance_score || 0}%</td>
-                    <td className="py-3.5 px-4 font-medium">{doc.overall_status}</td>
+                    <td className="py-3.5 px-4 font-bold text-amber-500">{(doc.issues || []).length} Issues</td>
                     <td className="py-3.5 px-4 font-mono text-text-muted">{doc.created_at?.slice(0, 10)}</td>
                     <td className="py-3.5 px-4 text-right space-x-2">
                       <button
                         onClick={() => setSelectedReport(doc as ClassificationResult)}
-                        className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20"
+                        className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg border border-primary/20 cursor-pointer"
                       >
-                        View
+                        View Analysis
                       </button>
                       <button
                         onClick={() => handleDeleteDocument(doc._id)}
-                        className="p-1 text-red-500 hover:bg-red-500/10 rounded-lg border border-red-500/20"
+                        className="p-1 text-red-500 hover:bg-red-500/10 rounded-lg border border-red-500/20 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -451,6 +529,7 @@ export const ProjectWorkspace: React.FC = () => {
           isLoading={isLoading}
           onAnalyzeProject={handleTriggerAnalyzeProject}
           isAnalyzing={isAnalyzing}
+          onSelectDocument={(doc) => setSelectedReport(doc)}
         />
       )}
 
@@ -463,7 +542,7 @@ export const ProjectWorkspace: React.FC = () => {
 
           <div className="space-y-4">
             {documents.map((doc) => (
-              <div key={doc._id} className="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-black/5 dark:border-white/5 space-y-3">
+              <div key={doc._id} className="p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-primary" />
@@ -473,17 +552,17 @@ export const ProjectWorkspace: React.FC = () => {
                 </div>
 
                 {doc.checks && doc.checks.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs">
                     {doc.checks.map((chk: any, idx: number) => (
-                      <div key={idx} className="p-2.5 rounded-xl bg-card-base border border-border-base/60 flex items-start gap-2">
-                        {chk.status === 'Compliant' ? (
+                      <div key={idx} className="p-3 rounded-xl bg-card-base border border-border-base flex items-start gap-2.5">
+                        {chk.status === 'Compliant' || chk.status === 'Excellent' ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                         ) : (
                           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                         )}
                         <div>
-                          <div className="font-bold text-text-main">{chk.rule_name || chk.parameter}</div>
-                          <p className="text-[11px] text-text-muted mt-0.5">{chk.finding || chk.remarks}</p>
+                          <div className="font-bold text-text-main">{chk.metric}</div>
+                          <p className="text-[11px] text-text-muted mt-0.5">{chk.reason}</p>
                         </div>
                       </div>
                     ))}
@@ -526,7 +605,7 @@ export const ProjectWorkspace: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {insights.map((ins, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-neutral-50 dark:bg-white/5 border border-black/5 dark:border-white/5 space-y-2">
+              <div key={idx} className="p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base space-y-2">
                 <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{ins.category}</span>
                 <h4 className="text-xs font-extrabold text-text-main">{ins.title}</h4>
                 <p className="text-xs text-text-muted leading-relaxed">{ins.description}</p>
@@ -566,12 +645,21 @@ export const ProjectWorkspace: React.FC = () => {
         </div>
       )}
 
-      {/* Existing FullScreenReportModal for previewing individual documents */}
+      {/* FullScreenReportModal for previewing individual document analysis */}
       {selectedReport && (
         <FullScreenReportModal
           isOpen={!!selectedReport}
           onClose={() => setSelectedReport(null)}
           report={selectedReport}
+        />
+      )}
+
+      {/* DocumentComparisonModal for side-by-side comparison matrix */}
+      {isComparing && (
+        <DocumentComparisonModal
+          isOpen={isComparing}
+          onClose={() => setIsComparing(false)}
+          documents={documents}
         />
       )}
     </div>

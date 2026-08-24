@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, FileText, CheckCircle2, ShieldCheck,
-  Sparkles, ClipboardCheck, Bookmark
+  Sparkles, Bookmark, AlertTriangle, MapPin,
+  Check, AlertCircle, Layers, Wrench
 } from 'lucide-react';
 import type { ClassificationResult } from '../types/document';
 import api from '../services/api';
@@ -13,7 +14,7 @@ interface FullScreenReportModalProps {
   report: ClassificationResult;
 }
 
-type TabType = 'overview' | 'data' | 'compliance' | 'recommendations';
+type TabType = 'overview' | 'data' | 'compliance' | 'issues' | 'evidence' | 'recommendations';
 
 const getTheme = (type: string) => {
   switch (type) {
@@ -63,24 +64,32 @@ const formatFieldName = (field: string): string => {
     .join(' ');
 };
 
-const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, onClose, report }) => {
+const getSeverityBadge = (severity: string) => {
+  switch (severity?.toUpperCase()) {
+    case 'CRITICAL':
+      return 'bg-red-500/15 text-red-500 border-red-500/30';
+    case 'HIGH':
+      return 'bg-rose-500/15 text-rose-500 border-rose-500/30';
+    case 'MEDIUM':
+      return 'bg-amber-500/15 text-amber-500 border-amber-500/30';
+    case 'LOW':
+      return 'bg-blue-500/15 text-blue-500 border-blue-500/30';
+    default:
+      return 'bg-neutral-500/15 text-neutral-400 border-neutral-500/30';
+  }
+};
+
+export const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, onClose, report }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const modalRef = useRef<HTMLDivElement>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const isLoggedIn = !!localStorage.getItem('greenintel_token');
 
-  if (isOpen !== prevIsOpen) {
-    setPrevIsOpen(isOpen);
-    if (isOpen) {
-      setIsBookmarked(false);
-    }
-  }
-
-  // Prevent scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setIsBookmarked(false);
+      setActiveTab('overview');
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -89,7 +98,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !report) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
@@ -115,10 +124,7 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
       alert("Report saved to your bookmarks successfully!");
     } catch (err: unknown) {
       console.error(err);
-      const errMsg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
-        : undefined;
-      alert(errMsg || "Failed to bookmark report.");
+      alert("Failed to bookmark report.");
     }
   };
 
@@ -126,21 +132,13 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
   const theme = getTheme(report.document_type);
   const IconComponent = theme.icon;
 
-  // Fallbacks for missing backend properties to make the UI look enterprise-ready
-  const overview = report.generated_report ||
-    `This ${report.document_type} (file: ${report.filename}) was successfully parsed. The system classified this document with ${percentage}% confidence and extracted ${Object.keys(report.extracted_data || {}).length} structured green building attributes matching the IGBC taxonomy standards.`;
+  const checks = report.checks || [];
+  const issues = report.issues || [];
+  const recommendations = report.recommendations || [];
 
-  const compliance = report.overall_status
-    ? `The document has been audited against standard rating criteria and rated overall as "${report.overall_status}".`
-    : "Compliance details have not been evaluated for this document type.";
-
-  const recs = report.recommendations && report.recommendations.length > 0
-    ? report.recommendations
-    : [
-      "Ensure all compliance certificates carry standard seal registrations.",
-      "Include mechanical HVAC datasheets to support energy efficiency credits.",
-      "Establish regular waste audits to verify segregation targets."
-    ];
+  const passedChecksCount = report.passed_checks ?? checks.filter(c => c.status === 'Compliant' || c.status === 'Excellent').length;
+  const partialChecksCount = report.partial_checks ?? checks.filter(c => c.status === 'Partially Compliant').length;
+  const failedChecksCount = report.failed_checks ?? checks.filter(c => c.status === 'Non-Compliant').length;
 
   return (
     <AnimatePresence>
@@ -149,391 +147,392 @@ const FullScreenReportModal: React.FC<FullScreenReportModalProps> = ({ isOpen, o
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/35 dark:bg-black/60 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
           onClick={handleBackdropClick}
         >
           {/* Modal Container */}
           <motion.div
             ref={modalRef}
-            initial={{ opacity: 0, scale: 0.98, y: 8 }}
+            initial={{ opacity: 0, scale: 0.97, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 8 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
-            className="bg-card-base border border-border-base rounded-xl shadow-2xl max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col transition-all duration-350"
+            exit={{ opacity: 0, scale: 0.97, y: 12 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 380 }}
+            className="bg-card-base border border-border-base rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col transition-all duration-300 text-text-main"
           >
-            {/* Sticky Header */}
-            <header className="sticky top-0 bg-card-base border-b border-border-base p-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 flex-shrink-0">
+            {/* Top Command Header */}
+            <header className="sticky top-0 bg-card-base border-b border-border-base px-6 py-4 flex items-center justify-between z-10">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider block leading-none">Evaluation Report</span>
-                  <h2 className="text-sm font-bold text-text-main truncate mt-1.5 block leading-none" title={report.filename}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 uppercase tracking-wider">
+                      Document Analysis Workspace
+                    </span>
+                    <span className="text-xs text-text-muted font-medium">
+                      ID: {report._id || report.id || 'DOC-LIVE'}
+                    </span>
+                  </div>
+                  <h2 className="text-base font-extrabold text-text-main truncate mt-0.5" title={report.filename}>
                     {report.filename}
                   </h2>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${theme.bg}`}>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold border ${theme.bg}`}>
                   <IconComponent className="w-3.5 h-3.5" />
                   {report.document_type}
                 </span>
 
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
-                  <Sparkles className="w-3 h-3" />
+                <span className="hidden md:inline-flex items-center gap-1 text-xs font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/20">
+                  <Sparkles className="w-3.5 h-3.5" />
                   {percentage}% Confidence
                 </span>
 
-                {report.compliance_score !== undefined && (
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                    : report.overall_status === 'Partially Compliant'
-                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                    }`}>
-                    Score: {report.compliance_score} ({report.overall_status})
-                  </span>
-                )}
-
                 <button
                   onClick={handleBookmark}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${isBookmarked
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                    : 'bg-card-base border-border-base text-text-muted hover:text-text-main hover:bg-orange-500/10'
-                    }`}
-                  title="Bookmark Report"
+                  className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                    isBookmarked
+                      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                      : 'bg-neutral-100 dark:bg-white/5 text-text-muted hover:text-text-main border-black/5 dark:border-white/10'
+                  }`}
+                  title={isBookmarked ? "Report Saved" : "Save Report"}
                 >
-                  <Bookmark className="w-3.5 h-3.5" />
-                  <span>{isBookmarked ? 'Saved' : 'Save Report'}</span>
+                  <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
                 </button>
 
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg border border-border-base hover:bg-orange-500/10 dark:hover:bg-white/5 text-text-muted hover:text-text-main transition-colors ml-2 cursor-pointer"
+                  className="p-2 text-text-muted hover:text-text-main bg-neutral-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl transition-all cursor-pointer"
+                  aria-label="Close modal"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </header>
 
-            {/* Navigation Tabs */}
-            <div className="bg-[#F8FAFC] dark:bg-bg-base border-b border-border-base px-4 py-2 flex gap-1.5 flex-shrink-0">
-              {(['overview', 'data', 'compliance', 'recommendations'] as TabType[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${activeTab === tab
-                    ? 'bg-card-base border-border-base text-text-main shadow-sm'
-                    : 'bg-transparent border-transparent text-text-muted hover:text-text-main hover:bg-orange-500/10'
+            {/* Navigation Tabs Bar */}
+            <div className="flex items-center gap-1 px-6 pt-3 border-b border-border-base bg-neutral-500/[0.03] overflow-x-auto custom-scrollbar">
+              {[
+                { id: 'overview', label: 'Overview', icon: Layers },
+                { id: 'data', label: 'Extracted Data', icon: FileText, count: Object.keys(report.extracted_data || {}).length },
+                { id: 'compliance', label: 'Compliance Analysis', icon: ShieldCheck, count: checks.length },
+                { id: 'issues', label: 'Document Issues', icon: AlertTriangle, count: issues.length, badgeColor: issues.length > 0 ? 'bg-rose-500 text-white' : '' },
+                { id: 'evidence', label: 'Evidence & Location', icon: MapPin },
+                { id: 'recommendations', label: 'Recommendations', icon: Wrench, count: recommendations.length }
+              ].map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabType)}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+                      isActive
+                        ? 'border-primary text-primary bg-card-base'
+                        : 'border-transparent text-text-muted hover:text-text-main hover:bg-neutral-100 dark:hover:bg-white/5'
                     }`}
-                >
-                  {tab === 'overview' && 'Overview'}
-                  {tab === 'data' && 'Extracted Data'}
-                  {tab === 'compliance' && 'Compliance'}
-                  {tab === 'recommendations' && 'AI Recommendations'}
-                </button>
-              ))}
+                  >
+                    <TabIcon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                    {tab.count !== undefined && (
+                      <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${tab.badgeColor || 'bg-black/10 dark:bg-white/10 text-text-muted'}`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/10 dark:bg-transparent">
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
 
-              {/* Overview Tab */}
+              {/* 1. OVERVIEW TAB */}
               {activeTab === 'overview' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="bg-card-base border border-border-base rounded-xl p-5 shadow-sm space-y-3">
-                    <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Executive Summary
-                    </h3>
-                    <p className="text-xs text-text-muted leading-relaxed font-sans font-normal">
-                      {overview}
+                <div className="space-y-6">
+                  {/* Summary Score Card Banner */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-gradient-to-r from-orange-500/10 via-rose-500/10 to-purple-500/10 border border-border-base">
+                    <div className="md:col-span-2 flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-rose-500 flex flex-col items-center justify-center text-white shadow-lg shrink-0">
+                        <span className="text-2xl font-extrabold leading-none">{report.compliance_score ?? '--'}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider mt-0.5">Score</span>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold uppercase text-text-muted">Overall Evaluation</span>
+                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase border ${
+                            report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
+                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                              : report.overall_status === 'Partially Compliant'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                          }`}>
+                            {report.overall_status || 'Evaluated'}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-extrabold text-text-main mt-1 font-display">
+                          {report.filename}
+                        </h3>
+                        <p className="text-xs text-text-muted mt-0.5">
+                          Classification Confidence: <span className="font-bold text-text-main">{percentage}%</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2 grid grid-cols-3 gap-2">
+                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center flex flex-col items-center justify-center">
+                        <Check className="w-4 h-4 text-emerald-500 mb-1" />
+                        <span className="text-lg font-extrabold text-emerald-500 leading-none">{passedChecksCount}</span>
+                        <span className="text-[10px] font-bold text-text-muted mt-1 uppercase">Passed</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center flex flex-col items-center justify-center">
+                        <AlertCircle className="w-4 h-4 text-amber-500 mb-1" />
+                        <span className="text-lg font-extrabold text-amber-500 leading-none">{partialChecksCount}</span>
+                        <span className="text-[10px] font-bold text-text-muted mt-1 uppercase">Partial</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center flex flex-col items-center justify-center">
+                        <X className="w-4 h-4 text-rose-500 mb-1" />
+                        <span className="text-lg font-extrabold text-rose-500 leading-none">{failedChecksCount}</span>
+                        <span className="text-[10px] font-bold text-text-muted mt-1 uppercase">Failed</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Overview Text Box */}
+                  <div className="p-5 rounded-2xl bg-card-base border border-border-base space-y-2">
+                    <h4 className="text-xs font-extrabold uppercase text-text-muted tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                      Executive Summary & IGBC Alignment
+                    </h4>
+                    <p className="text-xs text-text-main leading-relaxed">
+                      {report.generated_report || `This ${report.document_type} ('${report.filename}') has been automatically parsed and evaluated against standard IGBC rating taxonomy. The AI information extraction pipeline extracted ${Object.keys(report.extracted_data || {}).length} structured parameters, resulting in a compliance score of ${report.compliance_score}/100.`}
                     </p>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-card-base border border-border-base rounded-xl p-4 shadow-sm space-y-2">
-                      <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Analysis Engine</span>
-                      <span className="text-xs font-bold text-text-main block font-sans">Sustainability Intelligence Classifier</span>
-                      <p className="text-[11px] text-text-muted font-sans">Advanced evaluation model mapping document sections to the IGBC taxonomy.</p>
-                    </div>
-
-                    <div className="bg-card-base border border-border-base rounded-xl p-4 shadow-sm space-y-2">
-                      <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Extraction Service</span>
-                      <span className="text-xs font-bold text-text-main block font-sans">Automated Compliance Auditor</span>
-                      <p className="text-[11px] text-text-muted font-sans">Extracts, validates, and normalizes key sustainability indicators and metrics.</p>
-                    </div>
-                  </div>
-                </motion.div>
+                </div>
               )}
 
-              {/* Extracted Data Tab */}
+              {/* 2. EXTRACTED DATA TAB */}
               {activeTab === 'data' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center gap-1.5 pb-1">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                    <h3 className="text-xs font-bold text-text-main uppercase tracking-wider"> Extracted Metric Parameters </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold uppercase text-text-muted tracking-wider">
+                      Extracted Document Parameters ({Object.keys(report.extracted_data || {}).length})
+                    </h3>
+                    <span className="text-[10px] text-text-muted">Real PyMuPDF + Llama 3.3 70B Extraction</span>
                   </div>
 
-                  {Object.keys(report.extracted_data).length === 0 ? (
-                    <div className="text-center p-8 bg-card-base border border-border-base rounded-xl">
-                      <span className="text-xs text-text-muted italic">No structured metrics extracted from this file type.</span>
-                    </div>
+                  {Object.keys(report.extracted_data || {}).length === 0 ? (
+                    <p className="text-xs text-text-muted py-8 text-center border border-dashed border-border-base rounded-2xl">
+                      No extracted data fields found.
+                    </p>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {Object.entries(report.extracted_data).map(([key, value]) => {
-                        const strVal = value ? String(value) : '';
-                        const isLong = key === 'findings' || key === 'recommendations' || strVal.length > 30;
-                        return (
-                          <div
-                            key={key}
-                            className={`bg-card-base border border-border-base/70 hover:border-primary/45 rounded-xl p-4 transition-all shadow-sm ${isLong ? 'sm:col-span-2 lg:col-span-3' : ''
-                              }`}
-                          >
-                            <span className="block text-[9px] font-bold text-text-muted uppercase tracking-wider font-sans">
-                              {formatFieldName(key)}
-                            </span>
-                            <span className={`block text-xs font-bold mt-1.5 whitespace-normal break-words leading-relaxed ${value ? 'text-text-main' : 'text-text-muted italic'}`}>
-                              {value || 'Not specified'}
-                            </span>
-                          </div>
-                        );
-                      })}
+                      {Object.entries(report.extracted_data || {}).map(([key, val]) => (
+                        <div key={key} className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base hover:border-primary/40 transition-colors">
+                          <span className="text-[10px] font-extrabold uppercase text-text-muted tracking-wider block">
+                            {formatFieldName(key)}
+                          </span>
+                          <span className="text-sm font-extrabold text-text-main mt-1 block font-mono">
+                            {val !== null && val !== undefined ? String(val) : 'Not Disclosed'}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               )}
 
-              {/* Compliance Tab */}
+              {/* 3. COMPLIANCE ANALYSIS TAB */}
               {activeTab === 'compliance' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6"
-                >
-                  {report.compliance_score !== undefined ? (
-                    <>
-                      {/* Summary Cards */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Compliance Score Card */}
-                        <div className="bg-card-base border border-border-base rounded-xl p-5 shadow-sm flex flex-col justify-between items-center text-center relative overflow-hidden">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
-                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Compliance Score</span>
-                          <div className="my-3 relative flex items-center justify-center">
-                            {/* Circle Progress bar */}
-                            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                              <circle
-                                cx="40"
-                                cy="40"
-                                r="34"
-                                stroke="currentColor"
-                                className="text-border-base/50 dark:text-white/10"
-                                strokeWidth="6"
-                                fill="transparent"
-                              />
-                              <circle
-                                cx="40"
-                                cy="40"
-                                r="34"
-                                stroke={
-                                  report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
-                                    ? '#10B981' // Green
-                                    : report.overall_status === 'Partially Compliant'
-                                      ? '#F59E0B' // Yellow
-                                      : '#EF4444' // Red
-                                }
-                                strokeWidth="6"
-                                fill="transparent"
-                                strokeDasharray={`${2 * Math.PI * 34}`}
-                                strokeDashoffset={`${2 * Math.PI * 34 * (1 - (report.compliance_score ?? 0) / 100)}`}
-                                className="transition-all duration-1000 ease-out"
-                              />
-                            </svg>
-                            <span className="absolute text-xl font-extrabold text-text-main font-mono">
-                              {report.compliance_score ?? 0}
+                <div className="space-y-4">
+                  <h3 className="text-xs font-extrabold uppercase text-text-muted tracking-wider">
+                    IGBC Rule Evaluation Matrix ({checks.length} Checks)
+                  </h3>
+
+                  {checks.length === 0 ? (
+                    <p className="text-xs text-text-muted py-8 text-center border border-dashed border-border-base rounded-2xl">
+                      No compliance checks generated.
+                    </p>
+                  ) : (
+                    <div className="overflow-x-auto rounded-2xl border border-border-base">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-black/[0.04] dark:bg-white/[0.05] border-b border-border-base font-extrabold text-text-muted uppercase text-[10px]">
+                          <tr>
+                            <th className="p-3.5">Rule / Metric</th>
+                            <th className="p-3.5">Extracted Value</th>
+                            <th className="p-3.5">Requirement / Benchmark</th>
+                            <th className="p-3.5">Status</th>
+                            <th className="p-3.5">Evaluation Reason</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border-base font-medium">
+                          {checks.map((chk, idx) => (
+                            <tr key={idx} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
+                              <td className="p-3.5 font-bold text-text-main">
+                                {chk.metric}
+                              </td>
+                              <td className="p-3.5 font-mono text-primary font-bold">
+                                {chk.value ?? 'N/A'}
+                              </td>
+                              <td className="p-3.5 text-text-muted">
+                                {chk.requirement || 'Standard Benchmark'}
+                              </td>
+                              <td className="p-3.5">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                                  chk.status === 'Excellent' || chk.status === 'Compliant'
+                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                    : chk.status === 'Partially Compliant'
+                                    ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                    : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                                }`}>
+                                  {chk.status}
+                                </span>
+                              </td>
+                              <td className="p-3.5 text-text-muted leading-relaxed">
+                                {chk.reason}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 4. DOCUMENT ISSUES TAB */}
+              {activeTab === 'issues' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-extrabold uppercase text-text-muted tracking-wider">
+                      Detected Issues ({issues.length})
+                    </h3>
+                    <span className="text-[10px] text-text-muted">What is wrong & how to correct it</span>
+                  </div>
+
+                  {issues.length === 0 ? (
+                    <div className="p-8 border border-emerald-500/20 rounded-2xl bg-emerald-500/5 text-center space-y-2">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                      <h4 className="text-sm font-extrabold text-emerald-500">Zero Compliance Issues Found!</h4>
+                      <p className="text-xs text-text-muted">
+                        This document meets or exceeds all IGBC sustainability evaluation criteria.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {issues.map((issue) => (
+                        <div key={issue.issue_id} className="p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base space-y-3 hover:border-primary/40 transition-colors">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-extrabold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                                {issue.issue_id}
+                              </span>
+                              <h4 className="text-sm font-extrabold text-text-main">
+                                {issue.metric}
+                              </h4>
+                            </div>
+                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase ${getSeverityBadge(issue.severity)}`}>
+                              {issue.severity} SEVERITY
                             </span>
                           </div>
-                          <span className="text-[9px] text-text-muted uppercase font-bold">IGBC Guidelines</span>
-                        </div>
 
-                        {/* Overall Status Card */}
-                        <div className="bg-card-base border border-border-base rounded-xl p-5 shadow-sm flex flex-col justify-between items-center text-center relative overflow-hidden">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
-                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Overall Status</span>
-                          <div className="my-4">
-                            <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-extrabold border ${report.overall_status === 'Excellent' || report.overall_status === 'Compliant'
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                              : report.overall_status === 'Partially Compliant'
-                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                              }`}>
-                              <ShieldCheck className="w-3.5 h-3.5" />
-                              {report.overall_status ?? 'Unknown'}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-black/[0.03] dark:bg-white/[0.04] p-3 rounded-xl">
+                            <div>
+                              <span className="text-[10px] font-bold text-text-muted uppercase block">Extracted Current Value:</span>
+                              <span className="font-bold text-rose-500 font-mono">{issue.current_value}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-text-muted uppercase block">Expected Requirement Threshold:</span>
+                              <span className="font-bold text-emerald-500 font-mono">{issue.expected_value}</span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-extrabold uppercase text-text-muted block">Problem Description:</span>
+                            <p className="text-xs text-text-main leading-relaxed">
+                              {issue.explanation}
+                            </p>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
+                            <span className="text-[10px] font-extrabold uppercase text-primary block">Recommended Action:</span>
+                            <p className="text-xs text-text-main font-semibold">
+                              {issue.recommended_action}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 5. EVIDENCE & LOCATION TAB */}
+              {activeTab === 'evidence' && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-extrabold uppercase text-text-muted tracking-wider">
+                    Source Evidence & Location Pinpointer ({checks.length} Evidence Records)
+                  </h3>
+
+                  <div className="space-y-3">
+                    {checks.map((chk, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-primary" />
+                            <span className="text-xs font-extrabold text-text-main">{chk.metric}</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-200 dark:bg-white/10 text-text-muted">
+                              {chk.section || 'Document Analysis'}
                             </span>
                           </div>
-                          <p className="text-[10px] text-text-muted leading-tight font-sans px-2">
-                            {report.overall_status === 'Excellent' && 'Exemplary environmental performance exceeding code requirements.'}
-                            {report.overall_status === 'Compliant' && 'Satisfactory environmental compliance matching standard codes.'}
-                            {report.overall_status === 'Partially Compliant' && 'Meets some baseline criteria but has unresolved issues.'}
-                            {report.overall_status === 'Non-Compliant' && 'Does not meet critical environmental thresholds.'}
-                          </p>
-                        </div>
-
-                        {/* Check Stats Card */}
-                        <div className="bg-card-base border border-border-base rounded-xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                          <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
-                          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block text-center font-sans">Rules Evaluation</span>
-                          <div className="space-y-2 my-2">
-                            <div className="flex items-center justify-between text-[11px] font-bold text-text-muted">
-                              <span className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                                Passed Checks
-                              </span>
-                              <span className="font-mono text-text-main bg-card-base border border-border-base px-1.5 py-0.5 rounded">{report.passed_checks ?? 0}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] font-bold text-text-muted">
-                              <span className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                Partial Checks
-                              </span>
-                              <span className="font-mono text-text-main bg-card-base border border-border-base px-1.5 py-0.5 rounded">{report.partial_checks ?? 0}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px] font-bold text-text-muted">
-                              <span className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                                Failed Checks
-                              </span>
-                              <span className="font-mono text-text-main bg-card-base border border-border-base px-1.5 py-0.5 rounded">{report.failed_checks ?? 0}</span>
-                            </div>
-                          </div>
-                          <span className="text-[9px] text-text-muted text-center font-semibold uppercase">Total: {((report.passed_checks ?? 0) + (report.partial_checks ?? 0) + (report.failed_checks ?? 0))} Checked</span>
-                        </div>
-                      </div>
-
-                      {/* Detailed Rules Table */}
-                      <div className="bg-card-base border border-border-base rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-5 py-3.5 border-b border-border-base flex items-center justify-between">
-                          <h4 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
-                            <ClipboardCheck className="w-4 h-4 text-primary" />
-                            Detailed Credit Evaluation Breakdown
-                          </h4>
-                          <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20 font-mono">
-                            Rule Engine v1.0
+                          <span className="text-xs font-mono font-extrabold text-primary">
+                            {chk.page_number ? `Page ${chk.page_number}` : 'Page information unavailable'}
                           </span>
                         </div>
 
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left border-collapse">
-                            <thead>
-                              <tr className="bg-card-base/80 text-[9.5px] font-bold text-text-muted uppercase tracking-wider border-b border-border-base">
-                                <th className="px-5 py-3">Rule/Metric</th>
-                                <th className="px-5 py-3 text-center">Extracted Value</th>
-                                <th className="px-5 py-3 text-center">Evaluation Status</th>
-                                <th className="px-5 py-3">Explanations & Reasons</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border-base/50">
-                              {report.checks && report.checks.map((check, index) => (
-                                <tr key={index} className="hover:bg-primary/5 transition-colors">
-                                  <td className="px-5 py-3 text-xs font-bold text-text-main whitespace-nowrap">
-                                    {formatFieldName(check.metric)}
-                                  </td>
-                                  <td className="px-5 py-3 text-xs text-center font-mono text-text-main font-semibold">
-                                    {check.value || '—'}
-                                  </td>
-                                  <td className="px-5 py-3 text-center whitespace-nowrap">
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-bold border ${check.status === 'Excellent' || check.status === 'Compliant'
-                                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                      : check.status === 'Partially Compliant'
-                                        ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                                      }`}>
-                                      {check.status}
-                                    </span>
-                                  </td>
-                                  <td className="px-5 py-3 text-xs text-text-muted font-sans leading-normal">
-                                    {check.reason}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                        <div className="p-3 rounded-xl bg-black/[0.04] dark:bg-black/40 border border-black/10 dark:border-white/10 font-mono text-xs text-text-main italic">
+                          "{chk.evidence_quote || 'Source sentence quotation not explicitly extracted.'}"
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      {/* Old Fallback Flow */}
-                      <div className="bg-card-base border border-border-base rounded-xl p-5 shadow-sm space-y-3">
-                        <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
-                          <ShieldCheck className="w-4 h-4 text-primary" />
-                          Statutory Compliance Statement
-                        </h3>
-                        <p className="text-xs text-text-muted leading-relaxed font-sans">
-                          {compliance}
-                        </p>
-                      </div>
 
-                      <div className="bg-card-base border border-border-base rounded-xl p-4 shadow-sm">
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans mb-3">Compliance Checklist</span>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between border-b border-border-base pb-2.5">
-                            <span className="text-xs text-text-muted font-medium font-sans">IGBC Credit Standards Check</span>
-                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-sans">PASSED</span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-border-base pb-2.5">
-                            <span className="text-xs text-text-muted font-medium font-sans">Data Quality & Completeness Audit</span>
-                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-sans">PASSED</span>
-                          </div>
-                          <div className="flex items-center justify-between pb-1">
-                            <span className="text-xs text-text-muted font-medium font-sans">Statutory Clearances Verification</span>
-                            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-sans">VERIFICATION PENDING</span>
-                          </div>
+                        <div className="flex items-center justify-between text-[11px] text-text-muted pt-1">
+                          <span>Extracted Value: <strong className="text-text-main font-mono">{chk.value ?? 'N/A'}</strong></span>
+                          <span>Requirement: <strong className="text-text-main">{chk.requirement || 'N/A'}</strong></span>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-
-              {/* Recommendations Tab */}
-              {activeTab === 'recommendations' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="flex items-center gap-1.5 pb-1">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">Actionable AI Insights</h3>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {recs.map((rec, index) => (
-                      <div
-                        key={index}
-                        className="bg-card-base border border-border-base hover:border-primary/45 rounded-xl p-4 flex gap-3 shadow-sm items-start transition-all"
-                      >
-                        <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20 flex-shrink-0 mt-0.5">
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </div>
-                        <p className="text-xs text-text-muted font-sans leading-relaxed">
-                          {rec}
-                        </p>
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
+              )}
+
+              {/* 6. RECOMMENDATIONS TAB */}
+              {activeTab === 'recommendations' && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-extrabold uppercase text-text-muted tracking-wider">
+                    Actionable Improvement Plan ({recommendations.length} Steps)
+                  </h3>
+
+                  {recommendations.length === 0 ? (
+                    <p className="text-xs text-text-muted py-8 text-center border border-dashed border-border-base rounded-2xl">
+                      No specific recommendations needed for this document.
+                    </p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {recommendations.map((rec, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base">
+                          <div className="w-6 h-6 rounded-lg bg-primary/10 border border-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </div>
+                          <p className="text-xs text-text-main font-semibold leading-relaxed pt-0.5">
+                            {rec}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
             </div>

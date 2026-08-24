@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid
 } from 'recharts';
 import {
-  Zap, Droplets, Trash, Award, Sparkles, Brain
+  Zap, Droplets, Trash, Award, Sparkles, Brain, AlertTriangle, ArrowRight, Flame
 } from 'lucide-react';
 import type { Project, ProjectAnalytics } from '../../types/project';
 import { DocumentRelationshipGraph } from './DocumentRelationshipGraph';
@@ -16,6 +16,7 @@ interface ProjectAnalyticsDashboardProps {
   isLoading: boolean;
   onAnalyzeProject: () => void;
   isAnalyzing: boolean;
+  onSelectDocument?: (doc: any) => void;
 }
 
 export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps> = ({
@@ -24,7 +25,8 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
   documents,
   isLoading,
   onAnalyzeProject,
-  isAnalyzing
+  isAnalyzing,
+  onSelectDocument
 }) => {
   const { theme } = useTheme();
 
@@ -33,6 +35,7 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
       ? { background: '#09090b', borderColor: '#27272a', borderRadius: '12px', color: '#fff', fontSize: '12px' }
       : { background: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#0f172a', fontSize: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }
   ), [theme]);
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -49,6 +52,8 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
   const kpis = analytics?.kpis;
   const health = analytics?.health;
   const metrics = analytics?.sustainability_metrics;
+  const hotspots = analytics?.hotspots || {};
+  const priorityActions = analytics?.priority_actions || [];
 
   // Colors for real data charts
   const DOC_COLORS = ['#F97316', '#06B6D4', '#10B981', '#8B5CF6', '#EC4899'];
@@ -69,8 +74,29 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
       ]
     : [];
 
+  const docPerformanceData = documents.map(d => ({
+    filename: d.filename,
+    score: d.compliance_score || 0,
+    rawDoc: d
+  }));
+
+  const getSeverityBadge = (severity: string) => {
+    switch (severity?.toUpperCase()) {
+      case 'CRITICAL':
+        return 'bg-red-500/15 text-red-500 border-red-500/30';
+      case 'HIGH':
+        return 'bg-rose-500/15 text-rose-500 border-rose-500/30';
+      case 'MEDIUM':
+        return 'bg-amber-500/15 text-amber-500 border-amber-500/30';
+      case 'LOW':
+        return 'bg-blue-500/15 text-blue-500 border-blue-500/30';
+      default:
+        return 'bg-neutral-500/15 text-neutral-400 border-neutral-500/30';
+    }
+  };
+
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-12 text-text-main">
       {/* Top Banner Control Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-orange-500/10 via-rose-500/10 to-purple-500/10 border border-black/10 dark:border-white/10 backdrop-blur-2xl">
         <div className="flex items-center gap-4">
@@ -83,7 +109,7 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
                 Project Sustainability Command Center
               </h2>
               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                MongoDB Scoped Real Telemetry
+                MongoDB Scoped Telemetry
               </span>
             </div>
             <p className="text-xs text-text-muted mt-0.5 font-sans">
@@ -102,7 +128,7 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
         </button>
       </div>
 
-      {/* 1. PROJECT HEALTH SCORE & 3D CARD */}
+      {/* 1. PROJECT HEALTH SCORE & PERFORMANCE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Health Score Gauge */}
         <div className="lg:col-span-1 p-6 rounded-3xl bg-card-base border border-border-base shadow-sm space-y-4 flex flex-col justify-between orange-glow">
@@ -141,7 +167,7 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
           </div>
         </div>
 
-        {/* Transparent Score Component Breakdown Grid */}
+        {/* Sub-Category Performance Breakdown Grid */}
         <div className="lg:col-span-2 p-6 rounded-3xl bg-card-base border border-border-base shadow-sm space-y-4">
           <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans">
             Sub-Category Performance Breakdown
@@ -183,10 +209,10 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
         </div>
       </div>
 
-      {/* 2. PROJECT KPI GRID (12 Animated Cards) */}
+      {/* 2. PROJECT KPI GRID */}
       <div className="space-y-3">
         <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans">
-          Project Key Performance Indicators (12 Metrics)
+          Project Key Performance Indicators
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -201,8 +227,13 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
           </div>
 
           <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Pending Docs</span>
-            <div className="text-xl font-bold text-amber-500 font-display">{kpis?.pending_documents || 0}</div>
+            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Total Issues</span>
+            <div className="text-xl font-bold text-amber-500 font-display">{kpis?.total_issues || 0}</div>
+          </div>
+
+          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
+            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Critical Issues</span>
+            <div className="text-xl font-bold text-rose-500 font-display">{kpis?.critical_issues || 0}</div>
           </div>
 
           <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
@@ -214,47 +245,10 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Avg Score</span>
             <div className="text-xl font-bold text-text-main font-display">{kpis?.average_compliance_score || 0}</div>
           </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Highest Score</span>
-            <div className="text-xl font-bold text-emerald-500 font-display">{kpis?.highest_score || 0}</div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Lowest Score</span>
-            <div className="text-xl font-bold text-red-500 font-display">{kpis?.lowest_score || 0}</div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Classifier Confidence</span>
-            <div className="text-xl font-bold text-indigo-500 font-display">
-              {kpis?.average_confidence ? `${(kpis.average_confidence * 100).toFixed(1)}%` : '0%'}
-            </div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Total Rules</span>
-            <div className="text-xl font-bold text-text-main font-display">{kpis?.total_compliance_rules || 0}</div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Passed Rules</span>
-            <div className="text-xl font-bold text-emerald-500 font-display">{kpis?.passed_rules || 0}</div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Partial Rules</span>
-            <div className="text-xl font-bold text-amber-500 font-display">{kpis?.partial_rules || 0}</div>
-          </div>
-
-          <div className="bg-card-base p-4 rounded-2xl border border-border-base shadow-sm space-y-1">
-            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Failed Rules</span>
-            <div className="text-xl font-bold text-red-500 font-display">{kpis?.failed_rules || 0}</div>
-          </div>
         </div>
       </div>
 
-      {/* 3. DOCUMENT & COMPLIANCE DISTRIBUTION CHARTS */}
+      {/* 3. CHARTS GRID (Pie & Bar) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Document Ingestion Distribution (Pie) */}
         <div className="bg-card-base border border-border-base rounded-3xl p-6 shadow-sm space-y-4">
@@ -312,7 +306,127 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
         </div>
       </div>
 
-      {/* 4. REAL SUSTAINABILITY EXTRACTED METRICS SUMMARY */}
+      {/* 4. DOCUMENT PERFORMANCE & HOTSPOTS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Document Performance Bar Chart */}
+        <div className="bg-card-base border border-border-base rounded-3xl p-6 shadow-sm space-y-4">
+          <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans flex items-center justify-between">
+            <span>Document Compliance Scores</span>
+            <span className="text-[10px] text-primary">Click bar to view analysis</span>
+          </h3>
+
+          {docPerformanceData.length === 0 ? (
+            <div className="h-64 flex items-center justify-center border border-dashed border-border-base rounded-2xl text-xs text-text-muted">
+              No documents uploaded yet
+            </div>
+          ) : (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={docPerformanceData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                  <XAxis dataKey="filename" stroke="#888888" fontSize={10} tickLine={false} />
+                  <YAxis stroke="#888888" fontSize={11} tickLine={false} domain={[0, 100]} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar
+                    dataKey="score"
+                    radius={[8, 8, 0, 0]}
+                    fill="#F97316"
+                    onClick={(entry: any) => {
+                      if (entry && entry.rawDoc && onSelectDocument) {
+                        onSelectDocument(entry.rawDoc);
+                      }
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        {/* Compliance Hotspots */}
+        <div className="bg-card-base border border-border-base rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-rose-500" />
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans">
+              Compliance Hotspots (Focus Priority)
+            </h3>
+          </div>
+
+          <div className="space-y-3">
+            {Object.entries(hotspots).map(([category, count]) => {
+              const total = (kpis?.total_issues || 1) || 1;
+              const pct = Math.round(((count as number) / total) * 100);
+              return (
+                <div key={category} className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-bold text-text-main">{category}</span>
+                    <span className="font-extrabold text-rose-500 font-mono">{count as number} issue{(count as number) !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-black/10 dark:bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500 transition-all duration-500"
+                      style={{ width: `${Math.max(pct, count ? 10 : 0)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 5. TOP PRIORITY ACTIONS */}
+      <div className="bg-card-base border border-border-base rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans">
+              Top Priority Corrective Actions ({priorityActions.length})
+            </h3>
+          </div>
+          <span className="text-[10px] text-text-muted">Sorted by Severity</span>
+        </div>
+
+        {priorityActions.length === 0 ? (
+          <p className="text-xs text-text-muted py-8 text-center border border-dashed border-border-base rounded-2xl">
+            No priority issues detected across project documents.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {priorityActions.slice(0, 5).map((action: any, idx: number) => {
+              const matchedDoc = documents.find(d => (d._id || d.id) === action.document_id || d.filename === action.filename);
+              return (
+                <div
+                  key={idx}
+                  onClick={() => matchedDoc && onSelectDocument?.(matchedDoc)}
+                  className="p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.03] border border-border-base hover:border-primary/50 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border uppercase shrink-0 ${getSeverityBadge(action.severity)}`}>
+                      {action.severity}
+                    </span>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-text-main group-hover:text-primary transition-colors">
+                        {action.metric}: {action.explanation}
+                      </h4>
+                      <p className="text-[11px] text-text-muted mt-0.5">
+                        Source: <span className="font-semibold text-text-main">{action.filename}</span> • Expected: <span className="font-mono text-emerald-500 font-bold">{action.expected_value}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-xs font-bold text-primary flex items-center gap-1 shrink-0 group-hover:translate-x-1 transition-transform">
+                    View Analysis <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 6. REAL SUSTAINABILITY EXTRACTED METRICS SUMMARY */}
       <div className="bg-card-base border border-border-base rounded-3xl p-6 shadow-sm space-y-4">
         <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider font-sans flex items-center gap-2">
           <Award className="w-4 h-4 text-primary" />
@@ -433,8 +547,10 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
         </div>
       </div>
 
-      {/* 5. INTERACTIVE DOCUMENT RELATIONSHIP TOPOLOGY GRAPH */}
+      {/* 7. INTERACTIVE DOCUMENT RELATIONSHIP TOPOLOGY GRAPH */}
       <DocumentRelationshipGraph project={project} documents={documents} />
     </div>
   );
 };
+
+export default ProjectAnalyticsDashboard;

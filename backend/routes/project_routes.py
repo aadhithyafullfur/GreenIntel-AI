@@ -11,14 +11,14 @@ from bson import ObjectId
 try:
     from backend.database.mongodb import check_connection, get_database, DatabaseOfflineException
     from backend.routes.auth_routes import get_current_user
-    from backend.utils.pdf_extractor import extract_text_from_pdf
+    from backend.utils.pdf_extractor import extract_text_from_pdf, extract_pdf_pages
     from backend.utils.classifier import classify_text
     from backend.services.information_extractor import extract_information
     from backend.services.compliance_checker import evaluate_compliance
 except ImportError:
     from database.mongodb import check_connection, get_database, DatabaseOfflineException
     from routes.auth_routes import get_current_user
-    from utils.pdf_extractor import extract_text_from_pdf
+    from utils.pdf_extractor import extract_text_from_pdf, extract_pdf_pages
     from utils.classifier import classify_text
     from services.information_extractor import extract_information
     from services.compliance_checker import evaluate_compliance
@@ -370,9 +370,9 @@ async def upload_project_documents(
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
 
-            # 1. Text Extraction
+            # 1. Text & Page Extraction
             try:
-                text = extract_text_from_pdf(file_path)
+                text, pages = extract_pdf_pages(file_path)
             except Exception as e:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -397,8 +397,8 @@ async def upload_project_documents(
                     detail=f"Information extraction failed for '{file.filename}': {str(extractor_err)}"
                 )
 
-            # 4. Compliance Evaluation
-            comp_res = evaluate_compliance(doc_type, extracted_data or {})
+            # 4. Compliance Evaluation with page evidence search
+            comp_res = evaluate_compliance(doc_type, extracted_data or {}, pages=pages)
 
             # Document Record linked to project_id and owner_id
             eval_doc = {
@@ -414,6 +414,12 @@ async def upload_project_documents(
                 "failed_checks": comp_res.get("failed_checks") or 0,
                 "partial_checks": comp_res.get("partial_checks") or 0,
                 "checks": comp_res.get("checks") or [],
+                "issues": comp_res.get("issues") or [],
+                "issues_count": comp_res.get("issues_count") or 0,
+                "critical_issues": comp_res.get("critical_issues") or 0,
+                "high_issues": comp_res.get("high_issues") or 0,
+                "medium_issues": comp_res.get("medium_issues") or 0,
+                "low_issues": comp_res.get("low_issues") or 0,
                 "recommendations": comp_res.get("recommendations") or [],
                 "processing_stage": "Completed",
                 "created_at": datetime.utcnow().isoformat()
@@ -697,6 +703,53 @@ async def get_project_analytics(project_id: str, current_user: dict = Depends(ge
 
     health_info = calculate_project_health(docs)
 
+    # Collect all issues across project documents
+    all_issues = []
+    hotspots = {
+        "Energy Performance": 0,
+        "Water Stewardship": 0,
+        "Waste Management": 0,
+        "Regulatory Compliance": 0,
+        "Audit Verification": 0
+    }
+
+    for d in docs:
+        d_issues = d.get("issues") or []
+        doc_filename = d.get("filename")
+        doc_id = str(d.get("_id"))
+        for iss in d_issues:
+            sec = iss.get("section", "Energy Performance")
+            if sec in hotspots:
+                hotspots[sec] += 1
+            else:
+                hotspots[sec] = hotspots.get(sec, 0) + 1
+
+            all_issues.append({
+                "document_id": doc_id,
+                "filename": doc_filename,
+                "document_type": d.get("document_type"),
+                "issue_id": iss.get("issue_id"),
+                "metric": iss.get("metric"),
+                "current_value": iss.get("current_value"),
+                "expected_value": iss.get("expected_value"),
+                "severity": iss.get("severity", "MEDIUM"),
+                "explanation": iss.get("explanation"),
+                "recommended_action": iss.get("recommended_action"),
+                "section": sec,
+                "page_number": iss.get("page_number"),
+                "evidence_quote": iss.get("evidence_quote")
+            })
+
+    # Sort priority actions by severity order: CRITICAL > HIGH > MEDIUM > LOW
+    severity_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    sorted_issues = sorted(all_issues, key=lambda x: severity_rank.get(x["severity"], 4))
+
+    total_issues = len(all_issues)
+    critical_issues = sum(1 for i in all_issues if i["severity"] == "CRITICAL")
+    high_issues = sum(1 for i in all_issues if i["severity"] == "HIGH")
+    medium_issues = sum(1 for i in all_issues if i["severity"] == "MEDIUM")
+    low_issues = sum(1 for i in all_issues if i["severity"] == "LOW")
+
     return {
         "success": True,
         "kpis": {
@@ -711,13 +764,109 @@ async def get_project_analytics(project_id: str, current_user: dict = Depends(ge
             "total_compliance_rules": total_rules,
             "passed_rules": passed_rules,
             "failed_rules": failed_rules,
-            "partial_rules": partial_rules
+            "partial_rules": partial_rules,
+            "total_issues": total_issues,
+            "critical_issues": critical_issues,
+            "high_issues": high_issues,
+            "medium_issues": medium_issues,
+            "low_issues": low_issues
         },
         "document_distribution": doc_type_counts,
         "compliance_distribution": compliance_brackets,
         "health": health_info,
-        "sustainability_metrics": extracted_sustainability
+        "sustainability_metrics": extracted_sustainability,
+        "hotspots": hotspots,
+        "priority_actions": sorted_issues
     }
+
+# ----------------------------------------------------
+# 11. GENERATE DOWNLOADABLE PROJECT AUDIT REPORT
+# ----------------------------------------------------
+from fastapi.responses import HTMLResponse
+
+@router.get("/{project_id}/pdf-report", response_class=HTMLResponse)
+async def download_project_report_pdf(project_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Generates a printable HTML/PDF Project Audit Report for the project.
+    """
+    verify_db_connected()
+    db = get_database()
+    owner_id = str(current_user["_id"])
+
+    project = await db.projects.find_one({"project_id": project_id, "owner_id": owner_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized access.")
+
+    docs = await db.evaluations.find({"project_id": project_id, "user_id": owner_id}).to_list(length=1000)
+    health_info = calculate_project_health(docs)
+
+    doc_rows = ""
+    for d in docs:
+        doc_rows += f"""
+        <tr>
+            <td style="padding:10px; border:1px solid #ddd;"><b>{d.get('filename')}</b></td>
+            <td style="padding:10px; border:1px solid #ddd;">{d.get('document_type')}</td>
+            <td style="padding:10px; border:1px solid #ddd; font-weight:bold;">{d.get('compliance_score')}/100</td>
+            <td style="padding:10px; border:1px solid #ddd;">{d.get('overall_status')}</td>
+            <td style="padding:10px; border:1px solid #ddd;">{d.get('passed_checks', 0)} Passed, {d.get('failed_checks', 0)} Failed, {d.get('partial_checks', 0)} Partial</td>
+        </tr>
+        """
+
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>IGBC Compliance Audit Report - {project.get('name')}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; color: #111; line-height: 1.6; }}
+            .header {{ text-align: center; border-bottom: 3px solid #F97316; padding-bottom: 20px; margin-bottom: 30px; }}
+            .title {{ font-size: 24px; font-weight: bold; color: #0F172A; margin: 0; }}
+            .subtitle {{ font-size: 14px; color: #64748B; margin-top: 5px; }}
+            .score-card {{ background: #FFF7ED; border: 1px solid #FDBA74; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; }}
+            .score-num {{ font-size: 42px; font-weight: bold; color: #EA580C; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+            th {{ background: #F8FAFC; padding: 12px; border: 1px solid #ddd; text-align: left; font-size: 12px; color: #475569; }}
+            .btn-print {{ background: #F97316; color: #fff; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; float: right; }}
+            @media print {{ .btn-print {{ display: none; }} }}
+        </style>
+    </head>
+    <body>
+        <button class="btn-print" onclick="window.print()">Print / Save PDF</button>
+        <div class="header">
+            <h1 class="title">GreenIntel AI – IGBC Sustainability Audit Report</h1>
+            <p class="subtitle">Project ID: {project.get('project_id')} | Client: {project.get('client_organization') or 'N/A'} | Location: {project.get('location') or 'India'}</p>
+            <p class="subtitle">Generated on: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}</p>
+        </div>
+
+        <div class="score-card">
+            <div style="font-size: 14px; text-transform: uppercase; font-weight: bold; color: #9A3412;">Overall Project Health & Compliance Score</div>
+            <div class="score-num">{health_info['overall_compliance']}% ({health_info['badge']})</div>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: #475569;">Evaluated against Indian Green Building Council (IGBC) taxonomy benchmarks across {len(docs)} documents.</p>
+        </div>
+
+        <h2>Uploaded Project Documents ({len(docs)})</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Document Type</th>
+                    <th>Compliance Score</th>
+                    <th>Status</th>
+                    <th>Checks Breakdown</th>
+                </tr>
+            </thead>
+            <tbody>
+                {doc_rows if doc_rows else "<tr><td colspan='5'>No documents uploaded.</td></tr>"}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 50px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 15px;">
+            © {datetime.utcnow().year} GreenIntel AI Compliance Intelligence Platform. All Rights Reserved.
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 # ----------------------------------------------------
 # 11. GET PROJECT TIMELINE

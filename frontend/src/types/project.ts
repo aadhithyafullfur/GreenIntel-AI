@@ -89,6 +89,11 @@ export interface ProjectKPIs {
   passed_rules: number;
   failed_rules: number;
   partial_rules: number;
+  total_issues?: number;
+  critical_issues?: number;
+  high_issues?: number;
+  medium_issues?: number;
+  low_issues?: number;
 }
 
 export interface SustainabilityMetrics {
@@ -142,6 +147,8 @@ export interface ProjectAnalytics {
     };
   };
   sustainability_metrics: SustainabilityMetrics;
+  hotspots?: Record<string, number>;
+  priority_actions?: any[];
 }
 
 export interface ProjectTimelineEvent {
