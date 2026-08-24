@@ -42,7 +42,7 @@ export const RecentActivityPanel: React.FC<RecentActivityPanelProps> = ({ activi
   };
 
   return (
-    <div className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 backdrop-blur-xl shadow-sm flex flex-col justify-between h-[380px]">
+    <div className="p-5 rounded-2xl bg-card-base border border-border-base backdrop-blur-xl shadow-sm flex flex-col justify-between h-[380px]">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-black/5 dark:border-white/10">
         <div>

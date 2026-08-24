@@ -6,12 +6,15 @@ import {
   FileText,
   History,
   Settings,
-  LogOut
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
 export const ProfileDropdown: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -27,105 +30,137 @@ export const ProfileDropdown: React.FC = () => {
 
   if (!user) return null;
 
+  // Extract initials (e.g. "Aadhithya" -> "A", "John Doe" -> "JD")
+  const initials = user.name
+    ? user.name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase()
+    : 'U';
+
+  const menuItems = [
+    {
+      label: 'My Profile',
+      description: 'View your account details',
+      icon: UserIcon,
+      path: '/profile'
+    },
+    {
+      label: 'Saved Reports',
+      description: 'Access generated reports',
+      icon: FileText,
+      path: '/saved-reports'
+    },
+    {
+      label: 'History',
+      description: 'View previous evaluations',
+      icon: History,
+      path: '/history'
+    },
+    {
+      label: 'Settings',
+      description: 'Manage platform preferences',
+      icon: Settings,
+      path: '/profile'
+    }
+  ];
+
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Trigger Button: 40px circular image with scale, orange border, and online indicator */}
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      {/* Trigger Button: 40px circular container with avatar or fallback initials */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary cursor-pointer focus:outline-none transition-all duration-200"
+        className="relative flex items-center justify-center w-10 h-10 rounded-full border-2 border-primary/60 hover:border-primary cursor-pointer focus:outline-none transition-all duration-200 shadow-sm"
         aria-expanded={isOpen}
         aria-haspopup="true"
+        aria-label="User profile menu"
       >
-        <img
-          src={user.avatarUrl}
-          alt={user.name}
-          className="w-full h-full rounded-full object-cover"
-          onError={(e) => {
-            // Fallback to initials if image fails to load
-            const initials = encodeURIComponent(
-              user.name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .substring(0, 2)
-                .toUpperCase()
-            );
-            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${initials}&background=F97316&color=fff&size=128&bold=true`;
-          }}
-        />
-        {/* Active Online Indicator */}
-        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#050505]" />
+        {user.avatarUrl && !imgError ? (
+          <img
+            src={user.avatarUrl}
+            alt={user.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white font-extrabold text-xs shadow-inner">
+            {initials}
+          </div>
+        )}
+        {/* Active Online Status Indicator */}
+        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#09090b]" />
       </motion.button>
 
-      {/* Premium Glass Dropdown Menu */}
+      {/* Premium Glassy Black Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.96 }}
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.96 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-0 mt-3 w-64 rounded-2xl p-2 z-[100] bg-card-base border border-border-base text-text-main shadow-2xl backdrop-blur-xl transition-all duration-300"
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute right-0 mt-3 w-72 rounded-2xl p-2.5 z-[100] glass-dropdown-surface text-text-main shadow-2xl transition-all duration-200"
           >
-            {/* Header: Large profile picture, Name, Email */}
-            <div className="flex flex-col items-center px-4 py-4 text-center border-b border-black/[0.05] dark:border-white/[0.05] mb-1">
-              <div className="relative w-14 h-14 rounded-full border-2 border-primary/45 p-0.5 mb-2.5 shadow-sm">
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-full h-full rounded-full object-cover"
-                />
+            {/* Header: ~64px Avatar, Name, Email centered */}
+            <div className="flex flex-col items-center px-4 py-4 text-center border-b border-black/[0.06] dark:border-white/[0.08] mb-1.5">
+              <div className="relative w-16 h-16 rounded-full border-2 border-primary/60 p-0.5 mb-2.5 shadow-md shadow-primary/10">
+                {user.avatarUrl && !imgError ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    onError={() => setImgError(true)}
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white font-extrabold text-lg shadow-inner">
+                    {initials}
+                  </div>
+                )}
               </div>
-              <span className="text-xs font-bold text-text-main leading-tight truncate max-w-full">
+              <span className="text-sm font-extrabold text-text-main leading-tight truncate max-w-full tracking-tight">
                 {user.name}
               </span>
-              <span className="text-[10px] text-text-muted mt-0.5 truncate max-w-full font-medium">
+              <span className="text-xs text-text-muted mt-0.5 truncate max-w-full font-medium">
                 {user.email}
               </span>
             </div>
 
-            {/* Menu Options */}
+            {/* Structured Menu Options */}
             <div className="space-y-0.5">
-              <Link
-                to="/profile"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-text-main hover:bg-neutral-100 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
-              >
-                <UserIcon className="w-4 h-4 text-text-muted" />
-                <span>My Profile</span>
-              </Link>
-
-              <Link
-                to="/saved-reports"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-text-main hover:bg-neutral-100 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
-              >
-                <FileText className="w-4 h-4 text-text-muted" />
-                <span>Saved Reports</span>
-              </Link>
-
-              <Link
-                to="/history"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-text-main hover:bg-neutral-100 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
-              >
-                <History className="w-4 h-4 text-text-muted" />
-                <span>History</span>
-              </Link>
-
-              <Link
-                to="/profile"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 text-xs font-semibold text-text-main hover:bg-neutral-100 dark:hover:bg-white/5 rounded-xl transition-colors cursor-pointer"
-              >
-                <Settings className="w-4 h-4 text-text-muted" />
-                <span>Settings</span>
-              </Link>
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className="group flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-black/[0.04] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-1.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.05] group-hover:bg-primary/10 text-text-muted group-hover:text-primary transition-colors shrink-0">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col truncate">
+                        <span className="text-xs font-bold text-text-main leading-none group-hover:text-primary transition-colors">
+                          {item.label}
+                        </span>
+                        <span className="text-[10px] text-text-muted mt-0.5 truncate">
+                          {item.description}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-3.5 h-3.5 text-text-muted/50 group-hover:text-primary transition-colors shrink-0 ml-1" />
+                  </Link>
+                );
+              })}
             </div>
 
-            <div className="border-t border-black/[0.05] dark:border-white/[0.05] my-1" />
+            <div className="border-t border-black/[0.06] dark:border-white/[0.08] my-1.5" />
 
             {/* Logout Action */}
             <button
@@ -133,10 +168,17 @@ export const ProfileDropdown: React.FC = () => {
                 setIsOpen(false);
                 logout();
               }}
-              className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-500/[0.06] rounded-xl transition-colors cursor-pointer text-left"
+              className="w-full group flex items-center justify-between px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-500/[0.08] rounded-xl transition-colors cursor-pointer text-left"
             >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500 shrink-0">
+                  <LogOut className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-none">Logout</span>
+                  <span className="text-[10px] text-red-500/70 mt-0.5">Sign out of your account</span>
+                </div>
+              </div>
             </button>
           </motion.div>
         )}
@@ -146,3 +188,4 @@ export const ProfileDropdown: React.FC = () => {
 };
 
 export default ProfileDropdown;
+

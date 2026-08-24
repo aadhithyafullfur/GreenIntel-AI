@@ -28,7 +28,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     <>
       <motion.div
         layout
-        className={`relative p-5 rounded-2xl bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 backdrop-blur-xl shadow-sm flex flex-col justify-between overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-4 z-50 h-[calc(100vh-32px)] bg-white dark:bg-neutral-950 shadow-2xl' : heightClass
+        className={`relative p-5 rounded-2xl bg-card-base border border-border-base backdrop-blur-xl shadow-sm flex flex-col justify-between overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-4 z-50 h-[calc(100vh-32px)] bg-bg-base shadow-2xl' : heightClass
           }`}
       >
         {/* Header Bar */}

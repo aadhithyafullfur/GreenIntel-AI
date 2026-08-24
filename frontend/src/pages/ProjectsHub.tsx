@@ -180,7 +180,7 @@ export const ProjectsHub: React.FC = () => {
               key={project.project_id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="group relative bg-card-base border border-border-base hover:border-primary/40 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 flex flex-col justify-between"
+              className="group relative bg-card-base border border-border-base hover:border-primary/45 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between card-3d"
             >
               <div className="space-y-4">
                 {/* Header Card Row */}

@@ -23,7 +23,7 @@ const getInsightBadge = (type: AIInsight['type']) => {
 
 export const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ insights, isLoading }) => {
   return (
-    <div className="p-5 rounded-2xl bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 backdrop-blur-xl shadow-sm flex flex-col justify-between h-[380px]">
+    <div className="p-5 rounded-2xl bg-card-base border border-border-base backdrop-blur-xl shadow-sm flex flex-col justify-between h-[380px]">
       <div className="flex items-center justify-between pb-3 border-b border-black/5 dark:border-white/10">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-xl bg-gradient-to-tr from-orange-500 to-rose-500 text-white shadow-sm">

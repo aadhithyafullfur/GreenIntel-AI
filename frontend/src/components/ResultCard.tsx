@@ -84,7 +84,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative bg-card-base border border-border-base rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/45 transition-all duration-200 flex flex-col justify-between overflow-hidden"
+      className="group relative bg-card-base border border-border-base rounded-2xl p-4.5 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col justify-between overflow-hidden card-3d"
     >
       {/* Visual Top Highlight Line */}
       <div className={`absolute top-0 left-0 right-0 h-0.5 ${theme.bar}`} />

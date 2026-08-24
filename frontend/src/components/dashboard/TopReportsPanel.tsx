@@ -56,7 +56,7 @@ export const TopReportsPanel: React.FC<TopReportsPanelProps> = ({ reports, isLoa
           <motion.div
             key={key}
             whileHover={{ y: -3 }}
-            className={`p-4 rounded-2xl bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 backdrop-blur-xl shadow-sm flex flex-col justify-between relative overflow-hidden group`}
+            className={`p-4 rounded-2xl bg-card-base border border-border-base backdrop-blur-xl shadow-sm flex flex-col justify-between relative overflow-hidden group`}
           >
             <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${color}`} />
 

@@ -136,7 +136,7 @@ export const KPICard: React.FC<KPICardProps> = ({ kpiKey, data, isLoading }) => 
     <motion.div
       whileHover={{ y: -4, scale: 1.01 }}
       transition={{ duration: 0.2 }}
-      className="relative group p-4 rounded-2xl bg-white/70 dark:bg-black/50 border border-black/10 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col justify-between"
+      className="relative group p-4 rounded-2xl bg-card-base border border-border-base shadow-sm hover:shadow-xl hover:border-primary/45 transition-all duration-300 overflow-hidden flex flex-col justify-between card-3d"
     >
       {/* Top subtle gradient glow line */}
       <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${colorStyle}`} />

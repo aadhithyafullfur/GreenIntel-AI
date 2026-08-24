@@ -132,24 +132,24 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 1. Hero Section: Premium, Minimal, Above the fold */}
-      <section className="relative overflow-hidden bg-card-base border border-border-base rounded-xl p-6 md:p-8 shadow-sm orange-glow transition-all duration-350">
+      <section className="relative overflow-hidden bg-card-base border border-border-base rounded-2xl p-6 md:p-8 shadow-sm orange-glow transition-all duration-350 card-3d">
         {/* Decorative Grid Accent */}
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.4] pointer-events-none" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.35] pointer-events-none" />
 
         <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 dark:bg-primary/20" />
 
         <div className="relative z-10 max-w-3xl space-y-3.5">
-          <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
             <Brain className="w-3.5 h-3.5" />
             <span>Document Intelligence Platform</span>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-extrabold text-text-main tracking-tight font-display">
+          <h1 className="text-2xl md:text-4xl font-extrabold text-text-main tracking-tight font-display">
             GreenIntel AI
           </h1>
 
-          <p className="text-xs md:text-sm text-text-muted font-semibold font-sans">
-            AI-Powered IGBC Document Evaluation and Compliance Intelligence Platform
+          <p className="text-xs md:text-sm text-text-muted font-bold font-sans">
+            AI-Powered IGBC Sustainability Document Evaluation & Compliance Intelligence Platform
           </p>
 
           <p className="text-xs text-text-muted leading-relaxed max-w-2xl font-normal font-sans">
@@ -159,71 +159,71 @@ const Home: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={scrollToUpload}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-xs rounded-lg shadow-sm shadow-primary/10 hover:shadow-md hover:shadow-primary/15 transition-all hover:-translate-y-0.5 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-extrabold text-xs rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
             >
               <span>Upload Document</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
       </section>
 
-      {/* 2. Stats Section (4-column sleek KPI grid) */}
+      {/* 2. Stats Section (4-column sleek 3D KPI grid) */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Documents Processed */}
-        <div className="bg-card-base p-4 rounded-xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-200">
+        <div className="bg-card-base p-4.5 rounded-2xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-300 card-3d">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Documents Processed</span>
-            <div className="text-xl font-bold text-text-main font-display flex items-baseline gap-1">
+            <div className="text-xl font-extrabold text-text-main font-display flex items-baseline gap-1">
               {stats.documents_processed}
               <span className="text-xs font-normal text-text-muted">total</span>
             </div>
           </div>
-          <div className="p-2.5 rounded-lg bg-orange-500/10 text-primary border border-primary/20">
-            <FileText className="w-4 h-4" />
+          <div className="p-3 rounded-xl bg-orange-500/10 text-primary border border-primary/20">
+            <FileText className="w-4.5 h-4.5" />
           </div>
         </div>
 
         {/* KPI 2: Compliance Evaluations */}
-        <div className="bg-card-base p-4 rounded-xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-200">
+        <div className="bg-card-base p-4.5 rounded-2xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-300 card-3d">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Compliance Evaluations</span>
-            <div className="text-xl font-bold text-text-main font-display">
+            <div className="text-xl font-extrabold text-text-main font-display">
               {stats.compliance_evaluations}
             </div>
           </div>
-          <div className="p-2.5 rounded-lg bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-            <ShieldCheck className="w-4 h-4" />
+          <div className="p-3 rounded-xl bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+            <ShieldCheck className="w-4.5 h-4.5" />
           </div>
         </div>
 
         {/* KPI 3: Reports Generated */}
-        <div className="bg-card-base p-4 rounded-xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-200">
+        <div className="bg-card-base p-4.5 rounded-2xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-300 card-3d">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Reports Saved</span>
-            <div className="text-xl font-bold text-text-main font-display">
+            <div className="text-xl font-extrabold text-text-main font-display">
               {stats.reports_generated}
             </div>
           </div>
-          <div className="p-2.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            <ClipboardCheck className="w-4 h-4" />
+          <div className="p-3 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <ClipboardCheck className="w-4.5 h-4.5" />
           </div>
         </div>
 
         {/* KPI 4: Classification Accuracy */}
-        <div className="bg-card-base p-4 rounded-xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-200">
+        <div className="bg-card-base p-4.5 rounded-2xl border border-border-base shadow-sm flex items-center justify-between hover:border-primary/45 transition-all duration-300 card-3d">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block font-sans">Classification Accuracy</span>
-            <div className="text-xl font-bold text-text-main font-display flex items-center gap-1.5">
+            <div className="text-xl font-extrabold text-text-main font-display flex items-center gap-1.5">
               {stats.classification_accuracy > 0 ? (stats.classification_accuracy * 100).toFixed(1) + '%' : '0.0%'}
-              <span className="inline-flex items-center text-[9px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 rounded">
+              <span className="inline-flex items-center text-[9px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
                 <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                 Target
               </span>
             </div>
           </div>
-          <div className="p-2.5 rounded-lg bg-purple-500/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-            <Sparkles className="w-4 h-4" />
+          <div className="p-3 rounded-xl bg-purple-500/10 dark:bg-purple-400/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+            <Sparkles className="w-4.5 h-4.5" />
           </div>
         </div>
       </section>
