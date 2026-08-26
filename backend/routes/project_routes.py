@@ -15,6 +15,7 @@ try:
     from backend.utils.classifier import classify_text
     from backend.services.information_extractor import extract_information
     from backend.services.compliance_checker import evaluate_compliance
+    from backend.services.project_chat_service import generate_project_chat_response
 except ImportError:
     from database.mongodb import check_connection, get_database, DatabaseOfflineException
     from routes.auth_routes import get_current_user
@@ -22,6 +23,11 @@ except ImportError:
     from utils.classifier import classify_text
     from services.information_extractor import extract_information
     from services.compliance_checker import evaluate_compliance
+    from services.project_chat_service import generate_project_chat_response
+
+class ProjectChatMessageInput(BaseModel):
+    message: str = Field(..., description="User question about the project documents")
+    history: Optional[List[Dict[str, str]]] = Field(default=None, description="Optional previous chat history")
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -421,6 +427,8 @@ async def upload_project_documents(
                 "medium_issues": comp_res.get("medium_issues") or 0,
                 "low_issues": comp_res.get("low_issues") or 0,
                 "recommendations": comp_res.get("recommendations") or [],
+                "pages": pages or [],
+                "raw_text": text[:30000] if text else "",
                 "processing_stage": "Completed",
                 "created_at": datetime.utcnow().isoformat()
             }
@@ -958,3 +966,138 @@ async def get_project_insights(project_id: str, current_user: dict = Depends(get
         })
 
     return {"success": True, "insights": insights}
+
+# ----------------------------------------------------
+# 15. PROJECT AI ASSISTANT CHATBOT ENDPOINTS
+# ----------------------------------------------------
+@router.post("/{project_id}/chat")
+async def project_chat_endpoint(
+    project_id: str,
+    payload: ProjectChatMessageInput,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Project-aware document assistant endpoint.
+    Retrieves real project data & documents, constructs grounded context,
+    calls Groq LLM, and returns grounded answer with source cards.
+    """
+    verify_db_connected()
+    db = get_database()
+    owner_id = str(current_user["_id"])
+
+    # 1. Project ID logging & validation
+    print(f"Chat project ID: {project_id} | User ID: {owner_id} | Message: '{payload.message.strip() if payload and payload.message else ''}'")
+    if not project_id or not project_id.strip() or project_id in ["undefined", "null"]:
+        raise HTTPException(status_code=400, detail="Invalid or missing project_id.")
+
+    # 2. Security Check: Ownership verification
+    project = await db.projects.find_one({"project_id": project_id, "owner_id": owner_id})
+    if not project:
+        raise HTTPException(status_code=404, detail=f"Project '{project_id}' not found or unauthorized access.")
+
+    # 3. Retrieve all documents belonging to project (querying both evaluations and documents collections)
+    docs = await db.evaluations.find({"project_id": project_id, "user_id": owner_id}).to_list(length=1000)
+    if not docs:
+        docs = await db.evaluations.find({"project_id": project_id}).to_list(length=1000)
+
+    print(f"Project: {project_id} ({project.get('name')}) | Retrieved {len(docs)} documents for context.")
+
+    # 4. Handle empty documents case gracefully
+    if not docs:
+        return {
+            "success": True,
+            "answer": f"Project **{project.get('name')}** currently has 0 uploaded documents. Please upload sustainability reports (Energy, Water, Waste, Audit, or Compliance) to enable document analysis.",
+            "sources": [],
+            "documents": [],
+            "metadata": {"project_id": project_id, "total_documents": 0}
+        }
+
+    # 5. Generate response using project_chat_service
+    res = await generate_project_chat_response(
+        project=project,
+        documents=docs,
+        user_message=payload.message.strip(),
+        chat_history=payload.history
+    )
+
+    if not res.get("success", True):
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=res.get("message") or res.get("answer") or "AI provider service error."
+        )
+
+    # 6. Save to project chat history in MongoDB
+    now_iso = datetime.utcnow().isoformat()
+    chat_record = {
+        "project_id": project_id,
+        "user_id": owner_id,
+        "user_message": payload.message.strip(),
+        "assistant_response": res.get("answer", ""),
+        "sources": res.get("sources", []),
+        "timestamp": now_iso
+    }
+    try:
+        await db.project_chats.insert_one(chat_record)
+    except Exception as err:
+        print(f"Warning: Failed to persist project chat history: {err}")
+
+    return {
+        "success": True,
+        "answer": res.get("answer"),
+        "sources": res.get("sources", []),
+        "documents": res.get("documents", []),
+        "metadata": res.get("metadata", {})
+    }
+
+
+@router.get("/{project_id}/chat/history")
+async def get_project_chat_history(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Retrieves stored chat conversation history for the specified project.
+    """
+    verify_db_connected()
+    db = get_database()
+    owner_id = str(current_user["_id"])
+
+    project = await db.projects.find_one({"project_id": project_id, "owner_id": owner_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized access.")
+
+    chats_cursor = db.project_chats.find({"project_id": project_id, "user_id": owner_id}).sort("timestamp", 1)
+    chat_docs = await chats_cursor.to_list(length=500)
+
+    history = []
+    for c in chat_docs:
+        history.append({
+            "id": str(c["_id"]),
+            "user_message": c.get("user_message", ""),
+            "assistant_response": c.get("assistant_response", ""),
+            "sources": c.get("sources", []),
+            "timestamp": c.get("timestamp")
+        })
+
+    return {"success": True, "history": history}
+
+
+@router.delete("/{project_id}/chat/history")
+async def clear_project_chat_history(
+    project_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Clears all saved chat history for the specified project.
+    """
+    verify_db_connected()
+    db = get_database()
+    owner_id = str(current_user["_id"])
+
+    project = await db.projects.find_one({"project_id": project_id, "owner_id": owner_id})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found or unauthorized access.")
+
+    await db.project_chats.delete_many({"project_id": project_id, "user_id": owner_id})
+    return {"success": True, "message": "Project chat history cleared."}
+

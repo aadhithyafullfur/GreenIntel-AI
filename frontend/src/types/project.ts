@@ -170,3 +170,20 @@ export interface ProjectInsight {
   impact?: string;
   action?: string;
 }
+
+export interface ProjectChatSource {
+  filename: string;
+  document_type: string;
+  page?: number | null;
+  snippet?: string;
+}
+
+export interface ProjectChatMessage {
+  id?: string;
+  sender: 'user' | 'ai';
+  text: string;
+  sources?: ProjectChatSource[];
+  timestamp?: string;
+  isError?: boolean;
+}
+

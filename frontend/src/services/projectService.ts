@@ -183,4 +183,32 @@ export const downloadProjectReportPDF = async (projectId: string): Promise<void>
   }
 };
 
+export const sendProjectChatMessage = async (
+  projectId: string,
+  message: string,
+  history?: { role: string; content: string }[]
+): Promise<{ answer: string; sources: any[]; documents: any[]; metadata: any }> => {
+  try {
+    const response = await api.post(`/api/projects/${projectId}/chat`, { message, history });
+    return response.data;
+  } catch (err) {
+    return handleApiError(err, 'Unable to analyze the project right now. Please try again.');
+  }
+};
 
+export const getProjectChatHistory = async (projectId: string): Promise<any[]> => {
+  try {
+    const response = await api.get(`/api/projects/${projectId}/chat/history`);
+    return response.data.history || [];
+  } catch (err) {
+    return handleApiError(err, 'Failed to fetch project chat history.');
+  }
+};
+
+export const clearProjectChatHistory = async (projectId: string): Promise<void> => {
+  try {
+    await api.delete(`/api/projects/${projectId}/chat/history`);
+  } catch (err) {
+    handleApiError(err, 'Failed to clear project chat history.');
+  }
+};

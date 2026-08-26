@@ -13,6 +13,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("information_extractor")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+PRIMARY_MODEL = os.getenv("GROQ_MODEL", "groq/compound-mini")
+FALLBACK_MODELS = [PRIMARY_MODEL, "groq/compound-mini", "qwen/qwen3.6-27b", "openai/gpt-oss-120b"]
 
 # Initialize client
 client = None
@@ -23,9 +25,6 @@ if GROQ_API_KEY:
         logger.error(f"Failed to initialize Groq client: {e}")
 else:
     logger.warning("GROQ_API_KEY is not set in environment variables.")
-
-# Model name as requested
-MODEL_NAME = "llama-3.3-70b-versatile"
 
 # Extraction schemas for each document type
 SCHEMAS: Dict[str, Dict[str, str]] = {
@@ -180,22 +179,38 @@ def extract_information(document_type: str, text: str) -> Dict[str, Any]:
         f"Return the response in valid, flat JSON."
     )
     
+    models_to_try = []
+    for m in FALLBACK_MODELS:
+        if m not in models_to_try:
+            models_to_try.append(m)
+
+    response_content = None
+    last_err = None
+    for model_candidate in models_to_try:
+        try:
+            response = client.chat.completions.create(
+                model=model_candidate,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.0,
+                max_tokens=2048
+            )
+            response_content = response.choices[0].message.content
+            break
+        except Exception as ex:
+            last_err = str(ex)
+            logger.warning(f"Information extraction failed on model '{model_candidate}': {ex}")
+
+    if not response_content:
+        raise RuntimeError(f"Information extraction failed across all models: {last_err}")
+
+    raw_content = response_content
+    logger.debug(f"Raw response from Groq: {raw_content}")
+    
     try:
-        # Call Groq API with JSON mode enabled
-        response = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.0,
-            max_tokens=2048
-        )
-        
-        raw_content = response.choices[0].message.content
-        logger.debug(f"Raw response from Groq: {raw_content}")
-        
         # Parse the JSON response
         parsed_data = parse_json_response(raw_content)
         

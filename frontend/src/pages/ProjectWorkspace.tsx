@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Building2, Upload, FileText, BarChart3, ShieldCheck, Clock, Brain, Settings,
   Sparkles, ArrowLeft, Trash2, Eye, CheckCircle2, AlertCircle,
-  MapPin, AlertTriangle, Layers, Download
+  MapPin, AlertTriangle, Layers, Download, Bot
 } from 'lucide-react';
 import {
   getProjectDetails,
@@ -28,6 +28,7 @@ import FileUpload from '../components/FileUpload';
 import FullScreenReportModal from '../components/FullScreenReportModal';
 import { ProjectAnalyticsDashboard } from '../components/projects/ProjectAnalyticsDashboard';
 import { DocumentComparisonModal } from '../components/projects/DocumentComparisonModal';
+import { ProjectChatbotPanel } from '../components/projects/ProjectChatbotPanel';
 import type { ClassificationResult } from '../types/document';
 
 export const ProjectWorkspace: React.FC = () => {
@@ -51,6 +52,7 @@ export const ProjectWorkspace: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isComparing, setIsComparing] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -212,6 +214,15 @@ export const ProjectWorkspace: React.FC = () => {
 
           {/* Primary Action Buttons */}
           <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-orange-500/20 to-rose-500/20 hover:from-orange-500/30 hover:to-rose-500/30 text-orange-600 dark:text-orange-400 border border-orange-500/30 font-extrabold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+              title="Open AI Project Assistant Chatbot"
+            >
+              <Bot className="w-4 h-4 text-orange-500" />
+              <span>AI Project Assistant</span>
+            </button>
+
             {documents.length > 1 && (
               <button
                 onClick={() => setIsComparing(true)}
@@ -662,6 +673,31 @@ export const ProjectWorkspace: React.FC = () => {
           documents={documents}
         />
       )}
+
+      {/* Floating AI Project Assistant Action Trigger Button */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-extrabold text-xs rounded-full shadow-2xl shadow-orange-500/30 hover:scale-105 transition-all cursor-pointer border border-white/20"
+        title="Open AI Project Assistant"
+      >
+        <div className="relative">
+          <Bot className="w-5 h-5" />
+          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border border-black"></span>
+          </span>
+        </div>
+        <span className="font-display tracking-tight">AI Assistant</span>
+      </button>
+
+      {/* Project-Aware AI Chatbot Panel */}
+      <ProjectChatbotPanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        project={project}
+        documents={documents}
+        onOpenDocumentModal={(doc) => setSelectedReport(doc)}
+      />
     </div>
   );
 };
