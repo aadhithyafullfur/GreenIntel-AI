@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Send, Trash2, Sparkles, FileText, CheckCircle2, AlertTriangle,
-  RefreshCw, ExternalLink, Bot
+  RefreshCw, ExternalLink
 } from 'lucide-react';
+import { AIChatbotIcon } from '../common/AIChatbotIcon';
 import {
   sendProjectChatMessage,
   getProjectChatHistory,
@@ -308,9 +309,7 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
           {/* Header */}
           <div className="p-4 border-b border-white/10 bg-[#070709]/90 backdrop-blur-md flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-                <Bot className="w-5 h-5 text-black" />
-              </div>
+              <AIChatbotIcon size="md" glow />
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-extrabold text-white font-display">AI Project Assistant</h3>
@@ -371,12 +370,13 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
               messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                  className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start items-start'}`}
                 >
+                  {msg.sender === 'ai' && <AIChatbotIcon size="xs" className="mt-0.5" />}
                   <div
                     className={`max-w-[88%] p-3.5 rounded-2xl text-xs space-y-2 border ${
                       msg.sender === 'user'
-                        ? 'bg-gradient-to-r from-orange-500 to-rose-600 text-white border-orange-400/20 rounded-br-none shadow-lg shadow-orange-500/10'
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white border-orange-400/20 rounded-br-none shadow-lg shadow-orange-500/10'
                         : msg.isError
                         ? 'bg-rose-500/10 border-rose-500/20 text-rose-400 rounded-bl-none'
                         : 'bg-neutral-900 border-white/10 text-neutral-200 rounded-bl-none shadow-md'

@@ -3,8 +3,9 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid
 } from 'recharts';
 import {
-  Zap, Droplets, Trash, Award, Sparkles, Brain, AlertTriangle, ArrowRight, Flame
+  Zap, Droplets, Trash, Award, Sparkles, AlertTriangle, ArrowRight, Flame
 } from 'lucide-react';
+import { AIChatbotIcon } from '../common/AIChatbotIcon';
 import type { Project, ProjectAnalytics } from '../../types/project';
 import { DocumentRelationshipGraph } from './DocumentRelationshipGraph';
 import { useTheme } from '../../context/ThemeContext';
@@ -100,9 +101,7 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
       {/* Top Banner Control Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-orange-500/10 via-rose-500/10 to-purple-500/10 border border-black/10 dark:border-white/10 backdrop-blur-2xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-            <Brain className="w-6 h-6" />
-          </div>
+          <AIChatbotIcon size="lg" glow animated />
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-extrabold text-text-main font-display">

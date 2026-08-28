@@ -5,8 +5,9 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid
 } from 'recharts';
 import {
-  Brain, ShieldCheck, Activity, BarChart3, Layers
+  ShieldCheck, Activity, BarChart3, Layers
 } from 'lucide-react';
+import { AIChatbotIcon } from '../components/common/AIChatbotIcon';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { KPICard } from '../components/dashboard/KPICard';
@@ -134,9 +135,7 @@ export const Dashboard: React.FC = () => {
       {/* Top Header Command Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-600/10 border border-black/10 dark:border-white/10 backdrop-blur-2xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-            <Brain className="w-7 h-7 text-black" />
-          </div>
+          <AIChatbotIcon size="lg" glow animated />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-extrabold text-text-main tracking-tight font-display">

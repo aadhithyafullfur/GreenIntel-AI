@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Building2, Upload, FileText, BarChart3, ShieldCheck, Clock, Brain, Settings,
   Sparkles, ArrowLeft, Trash2, Eye, CheckCircle2, AlertCircle,
-  MapPin, AlertTriangle, Layers, Download, Bot
+  MapPin, AlertTriangle, Layers, Download
 } from 'lucide-react';
 import {
   getProjectDetails,
@@ -29,6 +29,7 @@ import FullScreenReportModal from '../components/FullScreenReportModal';
 import { ProjectAnalyticsDashboard } from '../components/projects/ProjectAnalyticsDashboard';
 import { DocumentComparisonModal } from '../components/projects/DocumentComparisonModal';
 import { ProjectChatbotPanel } from '../components/projects/ProjectChatbotPanel';
+import { AIChatbotIcon } from '../components/common/AIChatbotIcon';
 import { Project3DIntelligence } from '../components/projects/Project3DIntelligence';
 import type { ClassificationResult } from '../types/document';
 
@@ -218,10 +219,10 @@ export const ProjectWorkspace: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-auto">
             <button
               onClick={() => setIsChatOpen(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-orange-500/20 to-rose-500/20 hover:from-orange-500/30 hover:to-rose-500/30 text-orange-600 dark:text-orange-400 border border-orange-500/30 font-extrabold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500/20 to-amber-500/20 hover:from-orange-500/30 hover:to-amber-500/30 text-orange-500 font-extrabold text-xs rounded-xl border border-orange-500/30 shadow-sm transition-all cursor-pointer"
               title="Open AI Project Assistant Chatbot"
             >
-              <Bot className="w-4 h-4 text-orange-500" />
+              <AIChatbotIcon size="xs" />
               <span>AI Project Assistant</span>
             </button>
 
@@ -692,21 +693,13 @@ export const ProjectWorkspace: React.FC = () => {
       {/* Premium Floating AI Assistant Launcher */}
       <button
         onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4.5 py-3 bg-[#0E0E14]/90 backdrop-blur-2xl hover:bg-[#14141E] text-text-main font-extrabold text-xs rounded-2xl border border-primary/40 shadow-2xl shadow-primary/20 hover:scale-105 transition-all cursor-pointer glow-pulse-amber"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4 py-2.5 bg-[#0E0E14]/90 backdrop-blur-2xl hover:bg-[#14141E] text-text-main font-extrabold text-xs rounded-2xl border border-primary/40 shadow-2xl shadow-primary/20 hover:scale-105 transition-all cursor-pointer glow-pulse-amber group"
         title="Open AI Intelligence Assistant"
       >
-        <div className="relative flex items-center justify-center w-7 h-7 rounded-xl bg-gradient-to-tr from-orange-500 to-emerald-500 p-0.5">
-          <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
-            <Bot className="w-4 h-4 text-primary animate-pulse" />
-          </div>
-          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-black" />
-          </span>
-        </div>
+        <AIChatbotIcon size="md" glow animated />
         <div className="flex flex-col text-left">
           <span className="font-display tracking-tight font-extrabold text-white text-xs leading-none">AI Assistant</span>
-          <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mt-0.5">Online • Real Data</span>
+          <span className="text-[9px] text-orange-400 font-bold uppercase tracking-wider mt-0.5">Online • Real Data</span>
         </div>
       </button>
 

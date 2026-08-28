@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Brain, Bell, Menu, X, CheckCircle2
+  Bell, Menu, X, CheckCircle2
 } from 'lucide-react';
+import { AIChatbotIcon } from './common/AIChatbotIcon';
 import ProfileDropdown from './ProfileDropdown';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../context/AuthContext';
@@ -39,11 +40,7 @@ const Navbar: React.FC = () => {
 
         {/* Left Side: Brand Identity */}
         <Link to={isAuthenticated ? "/projects" : "/"} className="flex items-center gap-3 group">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 p-0.5 shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
-            <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center text-white">
-              <Brain className="w-5 h-5 text-primary" />
-            </div>
-          </div>
+          <AIChatbotIcon size="md" glow />
           <div className="flex flex-col">
             <span className="text-sm sm:text-base font-extrabold tracking-tight text-text-main flex items-center gap-2 font-display">
               <span>GreenIntel AI</span>

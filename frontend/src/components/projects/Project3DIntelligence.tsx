@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2
 } from 'lucide-react';
+import { AIChatbotIcon } from '../common/AIChatbotIcon';
 import type { Project } from '../../types/project';
 
 interface Project3DIntelligenceProps {
@@ -291,11 +292,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
       {/* Top Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/[0.06] dark:border-white/[0.08] pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 p-0.5 shadow-md shadow-primary/20 shrink-0">
-            <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center text-white">
-              <BrainIcon className="w-5 h-5 text-primary animate-pulse" />
-            </div>
-          </div>
+          <AIChatbotIcon size="md" animated />
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-tight text-text-main font-display">
@@ -430,10 +427,3 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
     </div>
   );
 };
-
-const BrainIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
-    <circle cx="12" cy="12" r="3"/>
-  </svg>
-);
