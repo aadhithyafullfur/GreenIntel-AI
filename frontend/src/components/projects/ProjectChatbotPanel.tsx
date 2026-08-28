@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bot, X, Send, Trash2, Sparkles, FileText, CheckCircle2, AlertTriangle,
-  RefreshCw, ExternalLink, AlertCircle
+  X, Send, Trash2, Sparkles, FileText, CheckCircle2, AlertTriangle,
+  RefreshCw, ExternalLink, AlertCircle, Bot
 } from 'lucide-react';
 import {
   sendProjectChatMessage,
@@ -17,6 +17,7 @@ interface ProjectChatbotPanelProps {
   project: Project;
   documents: any[];
   onOpenDocumentModal?: (doc: any) => void;
+  onHighlightDocs?: (docIds: string[]) => void;
 }
 
 const QUICK_QUESTIONS = [
@@ -34,7 +35,8 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
   onClose,
   project,
   documents,
-  onOpenDocumentModal
+  onOpenDocumentModal,
+  onHighlightDocs
 }) => {
   const [messages, setMessages] = useState<ProjectChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -57,6 +59,25 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
       loadHistory();
     }
   }, [isOpen, project?.project_id]);
+
+  const triggerDashboardHighlights = (query: string) => {
+    if (!onHighlightDocs || !documents.length) return;
+
+    const lower = query.toLowerCase();
+    if (lower.includes('failed') || lower.includes('issue') || lower.includes('fix') || lower.includes('lowest')) {
+      const failedOrLow = documents
+        .filter((d) => (d.compliance_score || 0) < 80 || (d.failed_checks || 0) > 0)
+        .map((d) => d._id);
+      onHighlightDocs(failedOrLow);
+    } else if (lower.includes('pass') || lower.includes('compliant')) {
+      const passed = documents
+        .filter((d) => (d.compliance_score || 0) >= 80 && (d.failed_checks || 0) === 0)
+        .map((d) => d._id);
+      onHighlightDocs(passed);
+    } else {
+      onHighlightDocs([]);
+    }
+  };
 
   const loadHistory = async () => {
     setIsInitializing(true);
@@ -98,9 +119,12 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
     }
   };
 
+
   const handleSend = async (messageText?: string) => {
     const textToSend = (messageText || inputValue).trim();
     if (!textToSend || isLoading) return;
+
+    triggerDashboardHighlights(textToSend);
 
     if (!project?.project_id) {
       console.error("Chat error: project_id is missing");

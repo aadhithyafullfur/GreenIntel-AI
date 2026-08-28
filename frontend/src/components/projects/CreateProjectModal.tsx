@@ -141,7 +141,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 Create New Sustainability Project
               </h2>
               <p className="text-xs text-text-muted">
-                Step {step} of 3 • Set up building parameters & metadata
+                {step === 1 && 'STEP 1 • PROJECT DETAILS'}
+                {step === 2 && 'STEP 2 • BUILDING PARAMETERS & DOCUMENTS'}
+                {step === 3 && 'STEP 3 • READY FOR ANALYSIS'}
               </p>
             </div>
           </div>

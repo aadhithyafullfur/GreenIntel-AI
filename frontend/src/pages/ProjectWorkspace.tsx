@@ -29,6 +29,7 @@ import FullScreenReportModal from '../components/FullScreenReportModal';
 import { ProjectAnalyticsDashboard } from '../components/projects/ProjectAnalyticsDashboard';
 import { DocumentComparisonModal } from '../components/projects/DocumentComparisonModal';
 import { ProjectChatbotPanel } from '../components/projects/ProjectChatbotPanel';
+import { Project3DIntelligence } from '../components/projects/Project3DIntelligence';
 import type { ClassificationResult } from '../types/document';
 
 export const ProjectWorkspace: React.FC = () => {
@@ -53,6 +54,7 @@ export const ProjectWorkspace: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isComparing, setIsComparing] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [highlightedDocIds, setHighlightedDocIds] = useState<string[]>([]);
 
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -258,6 +260,7 @@ export const ProjectWorkspace: React.FC = () => {
       <div className="flex items-center gap-1.5 border-b border-border-base overflow-x-auto custom-scrollbar pb-1">
         {[
           { id: 'overview', label: 'Overview & Upload', icon: Upload },
+          { id: '3d', label: '3D Project Intelligence', icon: Brain },
           { id: 'documents', label: `Documents (${documents.length})`, icon: FileText },
           { id: 'analytics', label: 'Project Analytics', icon: BarChart3 },
           { id: 'compliance', label: 'Compliance Checks', icon: ShieldCheck },
@@ -461,6 +464,18 @@ export const ProjectWorkspace: React.FC = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* 3D PROJECT INTELLIGENCE TAB */}
+      {activeTab === '3d' && (
+        <div className="space-y-6">
+          <Project3DIntelligence
+            project={project}
+            documents={documents}
+            highlightedDocIds={highlightedDocIds}
+            onOpenModal={(doc) => setSelectedReport(doc)}
+          />
         </div>
       )}
 
@@ -674,29 +689,35 @@ export const ProjectWorkspace: React.FC = () => {
         />
       )}
 
-      {/* Floating AI Project Assistant Action Trigger Button */}
+      {/* Premium Floating AI Assistant Launcher */}
       <button
         onClick={() => setIsChatOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white font-extrabold text-xs rounded-full shadow-2xl shadow-orange-500/30 hover:scale-105 transition-all cursor-pointer border border-white/20"
-        title="Open AI Project Assistant"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-4.5 py-3 bg-[#0E0E14]/90 backdrop-blur-2xl hover:bg-[#14141E] text-text-main font-extrabold text-xs rounded-2xl border border-primary/40 shadow-2xl shadow-primary/20 hover:scale-105 transition-all cursor-pointer glow-pulse-amber"
+        title="Open AI Intelligence Assistant"
       >
-        <div className="relative">
-          <Bot className="w-5 h-5" />
+        <div className="relative flex items-center justify-center w-7 h-7 rounded-xl bg-gradient-to-tr from-orange-500 to-emerald-500 p-0.5">
+          <div className="w-full h-full bg-black rounded-[10px] flex items-center justify-center">
+            <Bot className="w-4 h-4 text-primary animate-pulse" />
+          </div>
           <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border border-black"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-2 ring-black" />
           </span>
         </div>
-        <span className="font-display tracking-tight">AI Assistant</span>
+        <div className="flex flex-col text-left">
+          <span className="font-display tracking-tight font-extrabold text-white text-xs leading-none">AI Assistant</span>
+          <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider mt-0.5">Online • Real Data</span>
+        </div>
       </button>
 
-      {/* Project-Aware AI Chatbot Panel */}
+      {/* Project-Aware AI Chatbot Panel with Real-time Dashboard Connection */}
       <ProjectChatbotPanel
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         project={project}
         documents={documents}
         onOpenDocumentModal={(doc) => setSelectedReport(doc)}
+        onHighlightDocs={(docIds) => setHighlightedDocIds(docIds)}
       />
     </div>
   );
