@@ -28,16 +28,22 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isWebGLError, setIsWebGLError] = useState(false);
 
-  // Status Color Helper
+  // Status & Category Color Helper (Data Visualization Palette)
   const getStatusColorHex = (doc: any) => {
-    const score = doc.compliance_score || 0;
-    const failed = doc.failed_checks || 0;
     const status = doc.processing_status?.toLowerCase();
+    const type = doc.document_type || '';
 
-    if (status === 'processing' || status === 'uploading') return 0x6366F1; // Blue/Purple
-    if (score >= 80 && failed === 0) return 0x10B981; // Green
-    if (score >= 50 || failed > 0) return 0xF97316; // Amber/Orange
-    return 0xEF4444; // Red
+    if (status === 'processing' || status === 'uploading') return 0x6366F1; // Indigo/Blue
+    if (type === 'Energy Report') return 0xF97316; // Orange
+    if (type === 'Water Report') return 0x06B6D4; // Cyan/Blue
+    if (type === 'Waste Report') return 0x10B981; // Green
+    if (type === 'Audit Report') return 0x8B5CF6; // Purple
+    if (type === 'Compliance Document') return 0xEF4444; // Red
+
+    const score = doc.compliance_score || 0;
+    if (score >= 80) return 0x10B981;
+    if (score >= 50) return 0xF97316;
+    return 0xEF4444;
   };
 
   useEffect(() => {
@@ -77,9 +83,9 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
     pointLight.position.set(0, 0, 10);
     scene.add(pointLight);
 
-    const emeraldLight = new THREE.PointLight(0x10B981, 1.5, 50);
-    emeraldLight.position.set(-10, 5, 5);
-    scene.add(emeraldLight);
+    const secondaryOrangeLight = new THREE.PointLight(0xEA580C, 1.5, 50);
+    secondaryOrangeLight.position.set(-10, 5, 5);
+    scene.add(secondaryOrangeLight);
 
     // 3. Central Project Node (Glow Sphere)
     const centerGroup = new THREE.Group();
@@ -98,7 +104,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
     // Outer Radial Compliance Rings
     const ringGeo = new THREE.RingGeometry(2.2, 2.35, 64);
     const ringMat = new THREE.MeshBasicMaterial({
-      color: 0x10B981,
+      color: 0xF97316,
       side: THREE.DoubleSide,
       transparent: true,
       opacity: 0.4
@@ -285,7 +291,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
       {/* Top Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/[0.06] dark:border-white/[0.08] pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-emerald-500 p-0.5 shadow-md shadow-primary/20 shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 p-0.5 shadow-md shadow-primary/20 shrink-0">
             <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center text-white">
               <BrainIcon className="w-5 h-5 text-primary animate-pulse" />
             </div>
@@ -295,7 +301,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
               <h3 className="text-sm sm:text-base font-extrabold uppercase tracking-tight text-text-main font-display">
                 3D Project Intelligence Network
               </h3>
-              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-widest">
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 uppercase tracking-widest">
                 Interactive Canvas
               </span>
             </div>
@@ -305,16 +311,22 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] font-bold text-text-muted bg-black/[0.03] dark:bg-white/[0.05] px-3 py-1.5 rounded-xl border border-black/[0.04] dark:border-white/10 shrink-0">
-          <span className="flex items-center gap-1 text-emerald-500">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Compliant
-          </span>
+        {/* Category Visualization Legend */}
+        <div className="flex flex-wrap items-center gap-2.5 text-[10px] font-bold text-text-muted bg-black/[0.03] dark:bg-white/[0.05] px-3 py-1.5 rounded-xl border border-black/[0.04] dark:border-white/10 shrink-0">
           <span className="flex items-center gap-1 text-orange-500">
-            <span className="w-2 h-2 rounded-full bg-orange-500" /> Partial
+            <span className="w-2 h-2 rounded-full bg-orange-500" /> Energy
           </span>
-          <span className="flex items-center gap-1 text-red-500">
-            <span className="w-2 h-2 rounded-full bg-red-500" /> Non-Compliant
+          <span className="flex items-center gap-1 text-cyan-400">
+            <span className="w-2 h-2 rounded-full bg-cyan-400" /> Water
+          </span>
+          <span className="flex items-center gap-1 text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" /> Waste
+          </span>
+          <span className="flex items-center gap-1 text-purple-400">
+            <span className="w-2 h-2 rounded-full bg-purple-400" /> Audit
+          </span>
+          <span className="flex items-center gap-1 text-rose-500">
+            <span className="w-2 h-2 rounded-full bg-rose-500" /> Compliance
           </span>
         </div>
       </div>
@@ -324,7 +336,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
         /* Fallback 2D Topology Network */
         <div className="relative h-[380px] rounded-2xl bg-neutral-950/60 border border-white/10 p-6 flex flex-col items-center justify-center overflow-hidden">
           <div className="relative z-10 flex flex-col items-center text-center space-y-4 max-w-md">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-orange-500 to-emerald-500 p-1 shadow-xl shadow-primary/20 animate-spin-slow">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 p-1 shadow-xl shadow-primary/20 animate-spin-slow">
               <div className="w-full h-full bg-neutral-950 rounded-full flex items-center justify-center">
                 <Building2 className="w-8 h-8 text-primary" />
               </div>
@@ -341,9 +353,10 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
             {/* 2D Document Nodes Grid */}
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               {documents.map((doc) => {
-                const score = doc.compliance_score || 0;
+                const type = doc.document_type || '';
                 const isSelected = selectedDocId === doc._id;
                 const isHighlighted = highlightedDocIds.includes(doc._id);
+                const dotColor = type === 'Water Report' ? 'bg-cyan-400' : type === 'Waste Report' ? 'bg-emerald-400' : type === 'Audit Report' ? 'bg-purple-400' : type === 'Compliance Document' ? 'bg-rose-500' : 'bg-orange-500';
                 return (
                   <button
                     key={doc._id}
@@ -357,9 +370,9 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
                         : 'bg-white/10 text-white border-white/15 hover:bg-white/20'
                     }`}
                   >
-                    <span className={`w-2 h-2 rounded-full ${score >= 80 ? 'bg-emerald-400' : score >= 50 ? 'bg-orange-400' : 'bg-red-400'}`} />
+                    <span className={`w-2 h-2 rounded-full ${dotColor}`} />
                     <span className="truncate max-w-[120px]">{doc.filename}</span>
-                    <span className="text-[10px] opacity-80">{score}%</span>
+                    <span className="text-[10px] opacity-80">{doc.compliance_score || 0}%</span>
                   </button>
                 );
               })}
@@ -398,9 +411,7 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
                   <span className="text-[10px] font-bold text-primary uppercase tracking-wider truncate">
                     {hoveredDoc.document_type || 'Document'}
                   </span>
-                  <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${
-                    (hoveredDoc.compliance_score || 0) >= 80 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-orange-500/20 text-orange-400'
-                  }`}>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-primary/20 text-primary">
                     {hoveredDoc.compliance_score || 0}% Score
                   </span>
                 </div>
@@ -408,8 +419,8 @@ export const Project3DIntelligence: React.FC<Project3DIntelligenceProps> = ({
                   {hoveredDoc.filename}
                 </h5>
                 <div className="flex items-center justify-between text-[10px] text-neutral-400">
-                  <span>Passed: <strong className="text-emerald-400">{hoveredDoc.passed_checks || 0}</strong></span>
-                  <span>Failed: <strong className="text-red-400">{hoveredDoc.failed_checks || 0}</strong></span>
+                  <span>Passed: <strong className="text-primary">{hoveredDoc.passed_checks || 0}</strong></span>
+                  <span>Failed: <strong className="text-orange-300">{hoveredDoc.failed_checks || 0}</strong></span>
                 </div>
               </motion.div>
             )}

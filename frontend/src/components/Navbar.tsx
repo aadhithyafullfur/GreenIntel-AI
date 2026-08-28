@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Brain, Bell, Menu, X, CheckCircle2, Info
+  Brain, Bell, Menu, X, CheckCircle2
 } from 'lucide-react';
 import ProfileDropdown from './ProfileDropdown';
 import ThemeToggle from './ThemeToggle';
@@ -39,7 +39,7 @@ const Navbar: React.FC = () => {
 
         {/* Left Side: Brand Identity */}
         <Link to={isAuthenticated ? "/projects" : "/"} className="flex items-center gap-3 group">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-emerald-500 p-0.5 shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 via-amber-500 to-orange-600 p-0.5 shadow-lg shadow-primary/25 transition-transform group-hover:scale-105">
             <div className="w-full h-full bg-black rounded-[14px] flex items-center justify-center text-white">
               <Brain className="w-5 h-5 text-primary" />
             </div>
@@ -48,8 +48,8 @@ const Navbar: React.FC = () => {
             <span className="text-sm sm:text-base font-extrabold tracking-tight text-text-main flex items-center gap-2 font-display">
               <span>GreenIntel AI</span>
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
               </span>
               <span className="text-[9px] font-extrabold bg-primary/10 border border-primary/25 text-primary px-1.5 py-0.5 rounded-md uppercase tracking-wider">
                 IGBC
@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
                     <span className="text-xs font-extrabold uppercase tracking-wider text-text-main font-display flex items-center gap-1.5">
                       <Bell className="w-3.5 h-3.5 text-primary" /> Notifications
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
                       Live Stream
                     </span>
                   </div>
@@ -128,11 +128,7 @@ const Navbar: React.FC = () => {
                   <div className="space-y-1.5">
                     {mockNotifications.map((n) => (
                       <div key={n.id} className="p-2.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.04] border border-black/[0.04] dark:border-white/[0.06] flex items-start gap-2.5">
-                        {n.type === 'success' ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                        ) : (
-                          <Info className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
-                        )}
+                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                         <div className="min-w-0 flex-1">
                           <h5 className="text-xs font-bold text-text-main leading-tight">{n.title}</h5>
                           <p className="text-[10px] text-text-muted mt-0.5 leading-snug">{n.desc}</p>

@@ -267,7 +267,7 @@ export const ProjectsHub: React.FC = () => {
                     </button>
                     <button
                       onClick={() => navigate(`/projects/${project.project_id}`)}
-                      className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-emerald-500 hover:from-orange-600 hover:to-emerald-600 text-white font-extrabold text-[11px] shadow-md shadow-primary/20 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-extrabold text-[11.5px] shadow-md shadow-orange-500/25 hover:shadow-lg hover:shadow-orange-500/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border border-white/20"
                     >
                       <span>Workspace</span>
                       <ArrowRight className="w-3.5 h-3.5" />

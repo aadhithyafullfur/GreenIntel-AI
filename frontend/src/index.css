@@ -14,10 +14,10 @@
   --color-text-main: var(--text-main);
   --color-text-muted: var(--text-muted);
   --color-accent: var(--accent);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger: var(--danger);
-  --color-info: var(--info);
+  --color-success: var(--primary);
+  --color-warning: var(--primary-hover);
+  --color-danger: var(--accent);
+  --color-info: var(--primary);
 
   --color-dropdown-bg: var(--dropdown-bg);
   --color-dropdown-text: var(--dropdown-text);
@@ -43,10 +43,16 @@
   --danger: #EF4444;
   --info: #3B82F6;
   --grid-color: rgba(0, 0, 0, 0.035);
-  --glow-color: rgba(249, 115, 22, 0.12);
-  --glow-emerald: rgba(16, 185, 129, 0.12);
+  --glow-color: rgba(249, 115, 22, 0.14);
   --glass-bg: rgba(255, 255, 255, 0.92);
   --glass-border: rgba(0, 0, 0, 0.08);
+
+  /* Data Visualization Specific Category Tokens */
+  --chart-energy: #F97316;
+  --chart-water: #06B6D4;
+  --chart-waste: #10B981;
+  --chart-audit: #8B5CF6;
+  --chart-compliance: #EF4444;
 
   --dropdown-bg: #FFFFFF;
   --dropdown-text: #0F172A;
@@ -73,17 +79,23 @@
   --danger: #EF4444;
   --info: #6366F1;
   --grid-color: rgba(255, 255, 255, 0.025);
-  --glow-color: rgba(249, 115, 22, 0.22);
-  --glow-emerald: rgba(16, 185, 129, 0.2);
+  --glow-color: rgba(249, 115, 22, 0.25);
   --glass-bg: rgba(13, 13, 18, 0.86);
   --glass-border: rgba(255, 255, 255, 0.1);
+
+  /* Data Visualization Specific Category Tokens */
+  --chart-energy: #F97316;
+  --chart-water: #38BDF8;
+  --chart-waste: #34D399;
+  --chart-audit: #A78BFA;
+  --chart-compliance: #F87171;
 
   --dropdown-bg: #0E0E14;
   --dropdown-text: #F8FAFC;
   --dropdown-border: rgba(255, 255, 255, 0.12);
   --dropdown-hover: rgba(255, 255, 255, 0.07);
   --dropdown-selected: rgba(249, 115, 22, 0.2);
-  --dropdown-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95), 0 0 40px -10px rgba(249, 115, 22, 0.15);
+  --dropdown-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95), 0 0 40px -10px rgba(249, 115, 22, 0.2);
 }
 
 @layer utilities {
@@ -96,10 +108,6 @@
 
   .orange-glow {
     box-shadow: 0 0 50px -12px var(--glow-color);
-  }
-
-  .green-glow {
-    box-shadow: 0 0 50px -12px var(--glow-emerald);
   }
 
   /* 3D Depth & Card Elevation Helpers */
@@ -133,13 +141,7 @@
 
   /* Typography Text Gradients */
   .text-gradient-orange {
-    background: linear-gradient(135deg, #F97316 0%, #EA580C 50%, #E11D48 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .text-gradient-emerald {
-    background: linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%);
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 50%, #FB923C 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }

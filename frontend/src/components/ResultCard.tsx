@@ -15,41 +15,41 @@ const getTheme = (type: string) => {
   switch (type) {
     case 'Energy Report':
       return {
-        bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-        text: 'text-emerald-600 dark:text-emerald-400',
-        bar: 'bg-emerald-500',
+        bg: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+        text: 'text-orange-500',
+        bar: 'bg-orange-500',
         icon: Zap,
         desc: 'Details building Energy Performance Index (EPI), solar generation potential, HVAC systems, and lighting efficiency.'
       };
     case 'Water Report':
       return {
         bg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
-        text: 'text-blue-600 dark:text-blue-400',
+        text: 'text-blue-500',
         bar: 'bg-blue-500',
         icon: Droplets,
         desc: 'Covers rainwater harvesting systems, water demand-reduction indices, wastewater treatment, and plumbing efficiency.'
       };
     case 'Waste Report':
       return {
-        bg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
-        text: 'text-amber-600 dark:text-amber-400',
-        bar: 'bg-amber-500',
+        bg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+        text: 'text-emerald-500',
+        bar: 'bg-emerald-500',
         icon: Trash2,
         desc: 'Assesses wet/dry waste segregation, composting systems, construction debris management, and recycling protocols.'
       };
     case 'Audit Report':
       return {
         bg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
-        text: 'text-purple-600 dark:text-purple-400',
+        text: 'text-purple-500',
         bar: 'bg-purple-500',
         icon: ClipboardCheck,
         desc: 'Third-party green building compliance records, energy/water audits, building commissioning, and materials verification.'
       };
     case 'Compliance Document':
       return {
-        bg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-        text: 'text-indigo-600 dark:text-indigo-400',
-        bar: 'bg-indigo-500',
+        bg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+        text: 'text-rose-500',
+        bar: 'bg-rose-500',
         icon: ShieldCheck,
         desc: 'Statutory approvals, environmental clearance certificates, municipal approvals, and structural stability certifications.'
       };
@@ -93,7 +93,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
         {/* Header: PDF Icon + Filename + Success Status */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 dark:text-rose-400 flex-shrink-0">
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary flex-shrink-0">
               <FileIcon className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -112,7 +112,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
             >
               <Eye className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 flex-shrink-0">
+            <div className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 flex-shrink-0">
               <CheckCircle2 className="w-3 h-3" />
               <span>Classified</span>
             </div>
@@ -179,12 +179,13 @@ const ResultCard: React.FC<ResultCardProps> = ({ result }) => {
           </h5>
           <div className="flex items-center justify-between gap-2 bg-card-base/60 p-2 rounded-lg border border-border-base">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-bold border leading-none ${result.overall_status === 'Excellent' || result.overall_status === 'Compliant'
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                : result.overall_status === 'Partially Compliant'
-                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                }`}>
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-bold border leading-none ${
+                result.overall_status === 'Excellent' || result.overall_status === 'Compliant'
+                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                  : result.overall_status === 'Partially Compliant'
+                  ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                  : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+              }`}>
                 {result.overall_status}
               </span>
               <span className="text-[10px] font-extrabold text-text-main font-mono">

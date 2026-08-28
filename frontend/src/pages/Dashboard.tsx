@@ -132,18 +132,18 @@ export const Dashboard: React.FC = () => {
       className="space-y-6 pb-12 print:p-0"
     >
       {/* Top Header Command Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-orange-500/10 via-rose-500/10 to-purple-500/10 border border-black/10 dark:border-white/10 backdrop-blur-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-600/10 border border-black/10 dark:border-white/10 backdrop-blur-2xl">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
-            <Brain className="w-7 h-7" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-primary/20 shrink-0">
+            <Brain className="w-7 h-7 text-black" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-text-main tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-text-main tracking-tight font-display">
                 Intelligent Analytics Command Center
               </h1>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                Live MongoDB Atlas Telemetry
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 uppercase tracking-wider">
+                Live Telemetry
               </span>
             </div>
             <p className="text-xs text-text-muted mt-1">
@@ -154,7 +154,7 @@ export const Dashboard: React.FC = () => {
 
         <div className="flex items-center gap-3 self-end md:self-auto">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/60 dark:bg-white/5 border border-black/5 dark:border-white/10 text-xs font-mono font-bold text-text-main">
-            <Activity className="w-4 h-4 text-emerald-500 animate-pulse" />
+            <Activity className="w-4 h-4 text-primary animate-pulse" />
             <span>MongoDB Atlas Connected</span>
           </div>
         </div>
@@ -198,7 +198,7 @@ export const Dashboard: React.FC = () => {
       {/* TOP PERFORMING REPORTS PANEL */}
       <div className="space-y-2">
         <h2 className="text-xs font-extrabold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Top Performing Reports Summary
+          <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Top Performing Reports Summary
         </h2>
         {topReports && <TopReportsPanel reports={topReports} isLoading={isLoading} />}
       </div>
@@ -283,8 +283,8 @@ export const Dashboard: React.FC = () => {
                     label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                     labelLine={false}
                   >
-                    {charts.documentDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {charts.documentDistribution.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={['#F97316', '#06B6D4', '#10B981', '#8B5CF6', '#EF4444'][index % 5]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -314,8 +314,8 @@ export const Dashboard: React.FC = () => {
                     paddingAngle={3}
                     dataKey="value"
                   >
-                    {charts.complianceDistribution.map((entry, index) => (
-                      <Cell key={`cell-comp-${index}`} fill={entry.color} />
+                    {charts.complianceDistribution.map((_, index) => (
+                      <Cell key={`cell-comp-${index}`} fill={['#10B981', '#14B8A6', '#F59E0B', '#EF4444'][index % 4]} />
                     ))}
                   </Pie>
                   <Tooltip

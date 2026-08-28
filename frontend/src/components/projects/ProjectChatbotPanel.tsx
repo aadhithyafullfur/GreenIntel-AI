@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Send, Trash2, Sparkles, FileText, CheckCircle2, AlertTriangle,
-  RefreshCw, ExternalLink, AlertCircle, Bot
+  RefreshCw, ExternalLink, Bot
 } from 'lucide-react';
 import {
   sendProjectChatMessage,
@@ -251,29 +251,20 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
             );
           }
 
-          // Pass/Fail Status Lines
+          // Pass/Fail Status Lines (Monochromatic Orange Palette)
           if (trimmed.startsWith('✓')) {
             return (
-              <div key={idx} className="flex items-center gap-2 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <div key={idx} className="flex items-center gap-2 px-2.5 py-1 rounded bg-primary/10 border border-primary/20 text-primary font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(trimmed.substring(1)) }} />
               </div>
             );
           }
 
-          if (trimmed.startsWith('⚠')) {
+          if (trimmed.startsWith('⚠') || trimmed.startsWith('✕')) {
             return (
-              <div key={idx} className="flex items-center gap-2 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-medium">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(trimmed.substring(1)) }} />
-              </div>
-            );
-          }
-
-          if (trimmed.startsWith('✕')) {
-            return (
-              <div key={idx} className="flex items-center gap-2 px-2.5 py-1 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 font-medium">
-                <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <div key={idx} className="flex items-center gap-2 px-2.5 py-1 rounded bg-orange-500/15 border border-orange-500/30 text-orange-300 font-medium">
+                <AlertTriangle className="w-3.5 h-3.5 text-orange-400 shrink-0" />
                 <span dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(trimmed.substring(1)) }} />
               </div>
             );
@@ -303,7 +294,7 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end"
+        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex justify-end"
         onClick={onClose}
       >
         <motion.div
@@ -311,23 +302,23 @@ export const ProjectChatbotPanel: React.FC<ProjectChatbotPanelProps> = ({
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="w-full max-w-lg h-full bg-neutral-900 border-l border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden"
+          className="w-full max-w-lg h-full bg-[#0E0E14] border-l border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden text-text-main"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-4 border-b border-white/10 bg-neutral-900/90 backdrop-blur-md flex items-center justify-between">
+          <div className="p-4 border-b border-white/10 bg-[#070709]/90 backdrop-blur-md flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-                <Bot className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+                <Bot className="w-5 h-5 text-black" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-extrabold text-white font-display">AI Project Assistant</h3>
                   <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-mono">Ready</span>
+                  <span className="text-[10px] text-orange-400 font-mono">Ready</span>
                 </div>
                 <p className="text-[11px] text-neutral-400 truncate max-w-[220px]">
                   {project.name} ({documents.length} docs)

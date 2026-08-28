@@ -55,8 +55,8 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
   const hotspots = analytics?.hotspots || {};
   const priorityActions = analytics?.priority_actions || [];
 
-  // Colors for real data charts
-  const DOC_COLORS = ['#F97316', '#06B6D4', '#10B981', '#8B5CF6', '#EC4899'];
+  // Multi-Color Data Visualization Palette
+  const DOC_COLORS = ['#F97316', '#06B6D4', '#10B981', '#8B5CF6', '#EF4444'];
 
   const docDistributionData = analytics?.document_distribution
     ? Object.entries(analytics.document_distribution).map(([name, value], i) => ({
@@ -83,13 +83,13 @@ export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps>
   const getSeverityBadge = (severity: string) => {
     switch (severity?.toUpperCase()) {
       case 'CRITICAL':
-        return 'bg-red-500/15 text-red-500 border-red-500/30';
+        return 'bg-red-500/15 text-red-500 border-red-500/30 font-extrabold';
       case 'HIGH':
-        return 'bg-rose-500/15 text-rose-500 border-rose-500/30';
+        return 'bg-rose-500/15 text-rose-500 border-rose-500/30 font-bold';
       case 'MEDIUM':
-        return 'bg-amber-500/15 text-amber-500 border-amber-500/30';
+        return 'bg-amber-500/15 text-amber-500 border-amber-500/30 font-medium';
       case 'LOW':
-        return 'bg-blue-500/15 text-blue-500 border-blue-500/30';
+        return 'bg-blue-500/15 text-blue-500 border-blue-500/30 font-normal';
       default:
         return 'bg-neutral-500/15 text-neutral-400 border-neutral-500/30';
     }

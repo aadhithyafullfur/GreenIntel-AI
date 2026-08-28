@@ -88,12 +88,12 @@ export const ProfileDropdown: React.FC = () => {
             className="w-full h-full rounded-full object-cover"
           />
         ) : (
-          <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-rose-500 flex items-center justify-center text-white font-extrabold text-xs shadow-inner">
+          <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white font-extrabold text-xs shadow-inner">
             {initials}
           </div>
         )}
         {/* Active Online Status Indicator */}
-        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#070709]" />
+        <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-orange-500 ring-2 ring-white dark:ring-[#070709]" />
       </motion.button>
 
       {/* Premium Glassy Dropdown Menu */}
