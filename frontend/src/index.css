@@ -8,16 +8,18 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   --color-bg-base: var(--bg-base);
+  --color-bg-surface: var(--bg-surface);
   --color-card-base: var(--card-base);
   --color-surface-secondary: var(--surface-secondary);
   --color-border-base: var(--border-base);
   --color-text-main: var(--text-main);
   --color-text-muted: var(--text-muted);
+  --color-text-submuted: var(--text-submuted);
   --color-accent: var(--accent);
-  --color-success: var(--primary);
-  --color-warning: var(--primary-hover);
-  --color-danger: var(--accent);
-  --color-info: var(--primary);
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
 
   --color-dropdown-bg: var(--dropdown-bg);
   --color-dropdown-text: var(--dropdown-text);
@@ -30,22 +32,23 @@
   --primary: #F97316;
   --primary-hover: #EA580C;
   --primary-light: #FFEDD5;
-  --bg-base: #F8FAFC;
+  --bg-base: #F6F6F4;
   --bg-surface: #FFFFFF;
-  --card-base: rgba(255, 255, 255, 0.92);
-  --surface-secondary: #F1F5F9;
-  --border-base: #E2E8F0;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
+  --card-base: #FFFFFF;
+  --surface-secondary: #F1F1EF;
+  --border-base: rgba(0, 0, 0, 0.10);
+  --text-main: #181818;
+  --text-muted: #666666;
+  --text-submuted: #888888;
   --accent: #EA580C;
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
   --info: #3B82F6;
-  --grid-color: rgba(0, 0, 0, 0.035);
-  --glow-color: rgba(249, 115, 22, 0.14);
-  --glass-bg: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(0, 0, 0, 0.08);
+  --grid-color: rgba(0, 0, 0, 0.04);
+  --glow-color: rgba(249, 115, 22, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.10);
 
   /* Data Visualization Specific Category Tokens */
   --chart-energy: #F97316;
@@ -55,11 +58,11 @@
   --chart-compliance: #EF4444;
 
   --dropdown-bg: #FFFFFF;
-  --dropdown-text: #0F172A;
-  --dropdown-border: #E2E8F0;
-  --dropdown-hover: #F1F5F9;
+  --dropdown-text: #181818;
+  --dropdown-border: rgba(0, 0, 0, 0.12);
+  --dropdown-hover: #F1F1EF;
   --dropdown-selected: rgba(249, 115, 22, 0.12);
-  --dropdown-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --dropdown-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
 .dark {
@@ -73,6 +76,7 @@
   --border-base: rgba(255, 255, 255, 0.09);
   --text-main: #FAFAFA;
   --text-muted: #94A3B8;
+  --text-submuted: #64748B;
   --accent: #FB923C;
   --success: #10B981;
   --warning: #F59E0B;
@@ -118,7 +122,7 @@
 
   .card-3d:hover {
     transform: translateY(-3px);
-    box-shadow: 0 20px 40px -15px var(--glow-color), 0 10px 20px -8px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 20px 40px -15px var(--glow-color), 0 10px 20px -8px rgba(0, 0, 0, 0.15);
   }
 
   /* Premium Glassmorphism Card */
@@ -127,7 +131,7 @@
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
   }
 
   /* Reusable Dropdown Glass Surface */
@@ -161,9 +165,9 @@
 body {
   background-color: var(--bg-base);
   color: var(--text-main);
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 div,
@@ -175,9 +179,9 @@ a,
 input,
 select,
 textarea {
-  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Standardized focus outlines for accessibility */

@@ -29,7 +29,7 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
             await loginWithGoogle(credentialResponse.credential);
             onSuccess?.();
         } catch (err: unknown) {
-            const errMsg = err instanceof Error ? err.message : "Failed to authenticate with Google.";
+            const errMsg = err instanceof Error ? err.message : "Google authentication could not be completed. Please try again.";
             setLocalError(errMsg);
             onError?.(errMsg);
         } finally {
@@ -38,10 +38,11 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ onSucces
     };
 
     const handleFailure = () => {
-        const errMsg = "Google Sign-In was cancelled or failed.";
+        const errMsg = "Google authentication could not be completed. Please try again.";
         setLocalError(errMsg);
         onError?.(errMsg);
     };
+
 
     return (
         <div className="w-full flex flex-col items-center gap-2">

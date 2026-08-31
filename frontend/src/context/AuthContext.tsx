@@ -99,12 +99,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const extractErrorMessage = (err: unknown, defaultMsg: string): string => {
     if (err && typeof err === 'object') {
-      const errObj = err as { response?: { data?: { detail?: string } }; message?: string };
+      const errObj = err as { response?: { data?: { detail?: string } }; message?: string; code?: string };
       if (errObj.response?.data?.detail) return errObj.response.data.detail;
-      if (errObj.message) return errObj.message;
+      if (errObj.code === 'ERR_NETWORK' || (errObj.message && errObj.message.includes('Network Error'))) {
+        return 'Unable to connect to the authentication server. Please make sure the GreenIntel AI backend is running.';
+      }
+      if (errObj.message && !errObj.message.includes('Network Error')) return errObj.message;
     }
     return defaultMsg;
   };
+
 
   // Login
   const login = async (email: string, password: string): Promise<void> => {
@@ -233,11 +237,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(sessionUser);
       localStorage.setItem('greenintel_user', JSON.stringify(sessionUser));
     } catch (err: unknown) {
-      const errMsg = extractErrorMessage(err, 'Google Sign-In failed.');
+      const errMsg = extractErrorMessage(err, 'Google authentication could not be completed. Please try again.');
       setError(errMsg);
       setIsLoading(false);
       throw new Error(errMsg, { cause: err });
-    } finally {
+    }
+ finally {
       setIsLoading(false);
     }
   };

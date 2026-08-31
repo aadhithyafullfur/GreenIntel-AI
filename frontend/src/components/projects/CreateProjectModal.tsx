@@ -131,10 +131,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         className="relative w-full max-w-2xl bg-card-base border border-border-base rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-text-main"
       >
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border-base bg-gradient-to-r from-orange-500/10 via-rose-500/5 to-transparent">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border-base bg-gradient-to-r from-orange-500/15 via-amber-500/5 to-transparent">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
-              <Building2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-500 shrink-0 shadow-sm shadow-orange-500/10">
+              <Building2 className="w-5 h-5 text-orange-500 dark:text-orange-400" />
             </div>
             <div>
               <h2 className="text-base font-extrabold font-display text-text-main">

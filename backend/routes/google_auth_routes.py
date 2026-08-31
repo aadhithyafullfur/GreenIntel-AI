@@ -4,10 +4,15 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from services import auth_service
-from utils.jwt_handler import create_access_token
+try:
+    from backend.services import auth_service
+    from backend.utils.jwt_handler import create_access_token
+except ImportError:
+    from services import auth_service
+    from utils.jwt_handler import create_access_token
 from typing import Optional
 from datetime import datetime
+
 
 router = APIRouter(prefix="/api/auth", tags=["google-authentication"])
 logger = logging.getLogger("greenintel.google_auth")
